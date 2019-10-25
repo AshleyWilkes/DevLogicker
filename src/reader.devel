@@ -1,0 +1,65 @@
+Reader ma byt templatovana classa; jejimi template parametry maji byt jednotlive kroky, ktere je treba pri vytvareni Gridu vykonat, ve spravnem poradi; instancializovany Reader ma mit metodu, ktera bere input a blije Grid.
+
+****************** 4. krok GridBuilder -- PREMATURE ************************
+Nyni tedy pristupme k navrhu GridBuildera samotneho.
+-- je to templata, 1 parametr a tim je GridRecipe
+-- ma metodu
+  OutputGridType build( const input& );
+-- tato metoda udela dve veci:
+  a) vytvori prazdnou instanci OutputGridTypu
+  b) prozene tuto instanci implementacemi vsech kroku v GridRecipe
+****************** end of 4. krok ************************
+
+******************* 3. krok GridRecipe ****************************
+GridRecipe je std::tuple<InitStep>.
+InitStep je popis zpusobu, jak pomoci dat z
+--  inputu
+--  Gridu
+inicializovat dalsi data v Gridu. V zajmu sanity InitStep klade
+pozadavky na slozeni Gridu (tj. na to, jake Mappingy v nem museji byt).
+Z techto sanity pozadavku lze pro GridRecipe stanovit, jaky je
+OutputGridType celeho Recipe. OutputGridType je tedy seznam Mappingu
+a jde pouzit s ruznymi MappingTypy.
+****************** end of 3. krok ***********************
+
+********************* 2. krok InitStep **********************
+InitStep je tedy pojmenovany vztah mezi nejakymi hodnotami.
+Dale potrebujeme metodu, ktera tu inicializaci, InitStepem popsanou,
+provede nad konkretni instanci Gridu a inputu. K tomu je treba vedet,
+jake MappingTypy jsou pouzity pro jednotlive Mappingy, ktere tento InitStep
+propojuje. Predpokladejme pro jednoduchost, ze vsechny Mappingy maji
+tentyz MappingType.
+
+Ta implementace probiha ve krocich:
+1) vyndat z gridu hodnoty/mappingy/inputy,
+ktere odpovidaji pozadovanym MappingIds/inputFieldName
+2) na zaklade techto hodnot urcit vyslednou hodnotu
+3) tuto vyslednou hodnotu zakomponovat do Gridu
+******************* end of 2. krok ****************************
+
+********************* 1. krok -- DONE ******************************
+Takze prvnim krokem musi byt implementace Gridu. Mejme
+interface ReadOnlyMapping<typename K, typename V>
+s konstruktorem (std::map<K, V>)
+a metodou V get(K)
+
+Mejme MappingId<typename K, typename V, typename IdT, IdT id>.
+
+Mejme HasReadOnlyMapping<MappingId> jako base classu, ktera poskytuje
+V get<MappingId>(K) jako templatovanou metodu s tim, ze implementace je
+v dane instancializaci tridy k dispozici pouze pro instancializaci metody
+se stejnym template parametrem.
+!!!NEE!!! Potrebujeme Grid jako rekneme TypeCollection<T...>, ktera umi
+vratit samu sebe jako instanci T. A umi to casteni udelat pri kompilaci!
+Tj. poskytuje nejaky interface k vlastnimu static_cast.
+
+Cili chci, aby TypeCollection mela metodu nebo datovou polozku typu T
+pro T, ktera jsou soucasti jejiho template param packu a pro ostatni ne.
+
+A konecne mejme Grid jako potomka HasReadOnlyMappingu pro vsechny MappingIds, ktera jsou pozadovana.
+
+Delejme to cele nejakym aspon bazalnim TDD a mejme k tomu CMakeLists.txt a build/build.sh
+
+Takze kdyz uplne prvni, co chci implementovat, je nejaka implementace vyse popsaneho ReadOnlyMappingu,
+tak k tomu chci vytvorit 
+********************* end of 1. krok *********************************

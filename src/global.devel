@@ -1,0 +1,124 @@
+Celkovy pohled na strukturu Logickera:
+Identifikovany nasledujici subprojekty hlavniho projektu:
+
+-- Core:  Item, Operation, MappingId, Grid
+          Sequence, Set,//AKA Core Items
+          Core Operations, Extractor
+          //OperationImpl, OperationInterpreter,
+
+-- Catalogue: katalog znamych Itemu, Topologii, Operaci a Puzzlu
+
+-- Mappingy: mininamespace, mozna soucast workeru, ale zda se,
+        ze by mohly byt znovupouzitelne...
+
+-- Workeri: kazdy identifikovany typ workera ma mit vlastni subprojekt
+
+nejsou implicitni konverze (nikde v Logickeru)
+
+***************Core**************
+Item:
+  asi nic, jenom concept, kterej specifikuje, ze existuje bool operator==(const Item&, const Item&)
+
+Operation:
+  ma template parametr OutputT, coz je Item
+  ma optional template parametry InputTs, coz jsou Items nebo Operations
+      mezi moznostmi Items a Operations je zasadni rozdil:
+      implementace operace vyzaduje zavolat Operations, zatimco
+          Items mohou byt predany primo (priklad: AllOf ma parametr
+          typu Iterable(Set), ktery predstavuje Itemy, ktery se maji
+          prohnat predikatem; tento Set lze predat vyctem hodnot. 
+          Druhy parametr je predikat samotny, a ten musi byt predan
+          jako Operation, protoze jeho hodnotu lze urcit az na zaklade
+          parametru, ktere jsou znamy az uvnitr implementace AllOf).
+      to, ze i parametry typu Item muzu predat jako Operation, pokud
+          tato vraci hodnotu toho Itemu, je nahoda?? nebo dokonce designova
+          chyba?? Nebo je to naopak chytry designovy krok, zjednodusujici
+          zapis Puzzlu v Logickeru??
+  ma pozadavky na konzistentnost Inputu a Outputu -- compile time asserty
+
+OperationImpl: 
+  musi existovat implementace, ktere workerum umozni vyhodnocovat
+      stav gridu a reagovat na nej. Za tim ucelem chape worker (kterej
+      zda se staci jedinej: Solver) stav Gridu jako skupinu SolverValues
+      a Operationy jako relace mezi temi SolverValues. SolverValue ma byt
+      neco jako promenna jisteho typu v nejakem stavu rozlustenosti. Muze
+      napriklad byt uz zcela urcena (mit znamou hodnotu) nebo muze vedet,
+      ktere hodnoty pro ni jeste pripadaji v uvahu, anebo nemusi krome sveho
+      typu vedet vubec nic.
+  takova implementace musi mit nejakou pocitaci metodu, kterou lze
+      nejak zavolat a ktera nejak vrati vysledek sveho vypoctu. Dale
+      musi mit nejaky mechanismus, jak se worker muze dozvedet, jak vyse zminena
+      metoda vypada, aby se mohl rozhodnout, zda ji muze a chce v dane situaci
+      zavolat.
+  inu a ta metoda tedy muze byt templata s jednim template template
+      parametrem, ktery predstavuje typ toho SolverValues, a parametry
+      te metody pak mohou byt (SolverValues<OutputT>, SolverValues<InputTs>...>)
+      a vystupem muze byt nejaka datova struktura, obsahujici info o nalezene
+      dedukci a o tom, na ktery SolverValues plati.
+  slusne vychovana OperationA poskytuje v namespace logicker::operation
+      defaultni implementaci, parametrizovanou nejakou BasicSolverValues,
+      ktera dokaze delat trivialni dedukce; v terminologii predstavy o
+      constraintu jako stromu umi defaultni implementace postupovat smerem
+      ke koreni stromu (kdyz dostane vsechny vstupy, dokaze spocitat
+      vystup)
+
+OperationInterpreter:
+  templata, jejimz parametrem je Operation
+  definuje seznam "hodnot" a "implementovanejch operaci", kterezto seznamy
+      dohromady implementuji Operation, ktera je templatovym parametrem tridy
+  rozhodne potrebuju priradit kazde "hodnote" id; "implementovana operace"
+      je pak dvojice, kde prvnim prvkem je OperationImpl a druhym prvkem
+      je usporadany seznam id "hodnot", kterych se dana operace tyka;
+      takovato "implementovana operace" sama ma taky sve id
+  nu a "hodnota" je to, cemu v popisu OperationImplu rikam SolverValue;
+      je to informace o typu a stavu rozlustenosti urcite promenne;
+      !!presneji receno "hodnota" zde je seznam inicializacnich udaju,
+      jejichz uzitim se da SolverValue vytvorit!! Soucasti "hodnoty"
+      neni informace o tom, jakeho typu prislusna SolverValue bude.
+      ?Tj. je to proste typ + domena?
+
+Set, Sequence:
+  dva rozdilne pristupy ke Collection
+  oba naplnuji koncept Item, tj. lze je porovnavat na rovnost
+  obema jde iterovat, kazdy jde pouzit jako orig pro ten druhy typ
+  obe umi rict, kolik maji prvku
+  kazdy lze zkonstruovat z paru iteratoru
+  Set umi podat info o poctu vyskytu daneho Itemu
+  Sequence umi rict, ktery Item je v ni na urcitem indexu
+
+CoreOperations:
+  SetValues,
+  SetsEqual,
+
+  PairValues,
+  UPairValues,
+
+  ValuesDiffer,
+  ValuesEqual,
+
+  Extracted,
+  ExtractedInv,
+
+  AllOf,
+  AnyOf,
+  NoneOf,
+  SomeOf,//nektery elementy splnuji predikat, nektery ne
+  HalfOf,//set musi mit sudy pocet prvku, prave polovina splnuje predikat, prave polovina ne
+
+  And,
+  Or
+
+MappingId:
+  MappingId je o tom, jak mapping v ramci definice puzzlu oznacovat, a 
+    mohl by asi vypadat takto, leda bych chtel IdT zafixovat jako string
+      MappingId<typename K, typename V, typename IdT, IdT id>.
+    value template parametry maji jiste radu omezeni, ktere uz si nepamatuju
+    necham definici takhle a budu pracovat s defaultnim typem string.
+
+Mapping:
+  je cokoli, co bere jako template parametr MappingId
+  timto cokoli se parametrizuje Grid a pouzijivaji to Workeri
+
+Grid:
+  template<template typename MappingType, template... MappingIds>
+  class Grid;

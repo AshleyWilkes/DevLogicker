@@ -1,0 +1,33 @@
+takze u implementace predpokladame rozdeleni do dvou casti:
+vypocetni metoda samotna, zda se, ze se vyskytuje ve dvou formach:
+- hodnotova: vstupy jsou konkretni hodnoty, vystup je taky hodnota; pokud je tato operace relation-based,
+  musi implementace specifikovat nejen, ke ktere relaci patri, ale i kterou z hodnot, jez relace
+  propojuje, tato implementace pocita
+- ValueSetova: vstupy jsou ValueSety, vystup je dedukce; dedukce specifikuje, ktereho vstupu se tyka, a
+  message, ktera se ma tomu vstupu poslat, aby doslo k zakomponovani dedukce do stavu Gridu
+
+wrapper, poskytujici interface pro nejaky typ MappingTypu; umi z MappingTypu dostat hodnotu (je-li
+  jednoznacna) a ValueSet; poskytuje jednotnej interface, jehoz pomoci se Solver muze ptat
+  na vystupy z implementacni metody
+wrappery jsou taky dvou zakladnich typu, jeden pro hodnotove a jeden pro ValueSetove vypocetni metody;
+  navenek poskytuji obe metody stejnej interface (vracejici dedukci)
+
+dalsi problem je, ze zname wrappery musi nekde bydlet, aby si je solver mohl volat. Tady jsem na pude
+  cireho vesteni, opravdu nevim, podle ceho bych mel zpusob implementace spravne vybirat. Volim tedy
+  pro zacatek jednu arbitratily chosen moznost a casem treba vytvorim i nejake dalsi a pak udelam
+  benchmarking nebo co ja vim.
+zakladni otazka je, jestli wrappery maji existovat v runtime nebo jestli to maji byt jen compile-time
+  abstrakce a zkompilovany kod ma uz mit v sobe primo volani vypocetnich metod. Zda se mi mirne
+  snazsi implementovat dynamickou verzi, takze volim tuto.
+na urovni namespace solver existuji templatovane promenne (staticke lokalni promenne templatovane metody)
+  pro kazdy typ operace, resp. relace; promenna je typu std::vector<ImplWrapper>; kazda slusne vychovana
+  implementace dedi nejakeho predka, jenz jako soucast sveho konstruktoru vola metodu, ktera ho do teto
+  promenne zaregistruje; kazda slusne vychovana implementace ve svem cpp souboru z tohoto duvodu take
+  vytvari na namespace urovni statickou promennou, obsahujici jednu instanci sve implementace, cimz
+  dojde k vyvolani toho konstruktoru
+
+jako alternativni moznosti se nabizi full compile time scenar, v nemz nejak iteruju pres zname
+  implementace uz pri kompilaci
+dalsi moznost je nepotrebovat instance Implementaci, jezto implementacni metoda i metoda wrapperu,
+  pres niz se k implementacni metode pristupuje, mohou byt static
+nejvhodnejsi zpusob, jak implementace v techto dvou scenarich registrovat k pouziti, neni promyslen

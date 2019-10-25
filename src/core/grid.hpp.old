@@ -1,0 +1,51 @@
+#pragma once
+#include <memory>
+#include <stdexcept>
+
+namespace logicker::core {
+
+template<typename T>
+class ContainsA {
+  public:
+    void set( const T& value ) { if ( value_ ) throw std::domain_error( "object already set" ); else value_ = std::make_unique<T>( value ); }
+    T get() const { if ( value_ ) return *value_; else throw std::domain_error( "object not set" ); }
+
+
+    //default constructor
+    ContainsA() = default;
+    //explicit constructor
+    ContainsA( const T& value ) : value_{ std::make_unique<T>( value ) } {}
+    //copy constructor
+    ContainsA( const ContainsA& orig ) : value_{ std::make_unique<T>( * orig.value_.get() ) } {}
+    //move constructor
+    ContainsA( ContainsA&& orig ) = default;
+    //copy assign
+    ContainsA& operator=( const ContainsA& orig ) { value_ = std::make_unique<T>( * orig.value_.get() ); }
+    //move assign
+    ContainsA& operator=( ContainsA&& orig ) = default;
+    //destructor
+    ~ContainsA() = default;
+  private:
+    std::unique_ptr<T> value_;
+};
+
+template<typename ...Ts>
+class TypeCollection : private ContainsA<Ts>... {
+  public:
+    template<typename T>
+    void set( const T& value ) { ContainsA<T>::set( value ); }
+    template<typename T>
+    T get() { return ContainsA<T>::get(); }
+};
+
+template<template<typename...> typename MappingType, typename ...MappingIds>
+class Grid : private TypeCollection<MappingType<MappingIds>...> {
+  public:
+    template<typename MappingId>
+    MappingType<MappingId> get() { return TypeCollection<MappingType<MappingIds>...>::template get<MappingType<MappingId>>(); }
+
+    template<typename MappingId>
+    void set( const std::map<typename MappingId::KeyT, typename MappingId::ValueT>& values ) { TypeCollection<MappingType<MappingIds>...>::template set<MappingType<MappingId>>( values ); }
+};
+
+}
