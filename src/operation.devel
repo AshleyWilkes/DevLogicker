@@ -11,6 +11,14 @@ wrapper, poskytujici interface pro nejaky typ MappingTypu; umi z MappingTypu dos
   na vystupy z implementacni metody
 wrappery jsou taky dvou zakladnich typu, jeden pro hodnotove a jeden pro ValueSetove vypocetni metody;
   navenek poskytuji obe metody stejnej interface (vracejici dedukci)
+uzivatel tedy nic o dvou typech implementaci/wrapperu nic nevi, z jeho pohledu existuji jen wrappery
+  a jsou vsechny stejna pakaz, resp. odlisuji se tim:
+    a) jakou relaci/operaci implementuji
+    b) s jakymi MappingTypy si dovedou poradit?? -- neni to nahodou tak, ze tohle jsem opustil
+        a pozaduju pro MappingTypy pouze to, aby umely vratit svuj stav jako ValueSet (tedy neco
+        jako domenu, kde v principu asi potrebuju i pripustit moznost AnyValue) a pripadne
+        pro zvyseni efektivity hledani umely rict Ano, uz vim, jaka je hodnota pro tento Key,
+        a je to tahle??
 
 dalsi problem je, ze zname wrappery musi nekde bydlet, aby si je solver mohl volat. Tady jsem na pude
   cireho vesteni, opravdu nevim, podle ceho bych mel zpusob implementace spravne vybirat. Volim tedy
@@ -31,3 +39,36 @@ jako alternativni moznosti se nabizi full compile time scenar, v nemz nejak iter
 dalsi moznost je nepotrebovat instance Implementaci, jezto implementacni metoda i metoda wrapperu,
   pres niz se k implementacni metode pristupuje, mohou byt static
 nejvhodnejsi zpusob, jak implementace v techto dvou scenarich registrovat k pouziti, neni promyslen
+
+now rozdil solver vs grid_builder. Vlastne se zda, ze rozdil neni, az na to, ze grid_builder
+  potrebuje input vstupni parametr a solver ne. Dalo by se tedy uvazovat o tom, ze grid_building
+  ma dve faze, prvni kopiruje data z inputu do zpocatku prazdneho gridu (interpretujic je pritom,
+  when needed), druha faze pak dela solving uplne stejne jako solver, pouze je vybavena constrainty
+  s jinymi vlastnostmi nez solver. Ano, to je skvele. GridBuilder ma totiz pouze jeden vstupni
+  parametr, a to je prave ten input; GridBuilder vytvori prazdny Grid, nakopiruje do nej data
+  z inputu a s takto vzniklym Gridem zavola solvovaci metodu, instancializovanou s vhodnymi Stepy.
+  I like it. (Viz nize, actually after some thought I don't like it anymore at all).
+
+cili z predchoziho plyne, ze potrebuju nejakou classu, ktera je templatovana na operation_ids a ma
+  metodu s jednim parametrem typu Grid. Tato classa prochazi operace, ktere ma brat v potaz, jejich
+  implementace, ktere ma k dispozici, a hleda pomoci tech implementaci nejake dedukce. A ted chovani
+  tyhle tridy nabizi ruzne moznosti: v jakym poradi operace prochazet, ???
+
+predpokladejme tedy interface DeductionEngine
+
+template<typename... Operations>
+class DeductionEngine {
+  public:
+    std::vector<Deduction> deduce( const Grid& grid );
+};
+
+jiny pohled: rozdil mezi solverem a grid_builderem je zcela zasadni. faze, jak jsem je popsal vyse,
+  nejsou oddelene, resp. neni to tak, ze napred jde udelat komplet faze 1 a pak teprve zacit s fazi 2.
+  prekopirovat data neni tak jednoduche, jak by to mohlo znit (Centers). pri buildeni se data do Gridu
+  pridavaji, zatimco pri solveni se mazou. vsechny uvahy pri buildeni jsou hodnotove, tj. na vstupu
+  pracuji se znamymi hodnotami, nikoli s mnozinami potencialne moznych hodnot. kroky se delaji 
+  v predepsanem poradi postupne, nesplnenost predpokladu (znalost prislusnych hodnot) je fatal error.
+  Result: ackoli existuji jiste podobnosti mezi buildenim gridu a solvenim, rozdilu je rovnez velmi
+  mnoho a jsou dost zasadni; rozhodne nema cenu mit jeden specializovany objekt, ktery bude umet
+  delat oboji. Neni nutne zcela rezignovat na moznost, ze by nektere casti kodu pouzivaly obe operace,
+  ale znacna cast funkcionality ma byt implementovana pro kazdou operaci zvlast.

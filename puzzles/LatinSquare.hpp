@@ -20,7 +20,7 @@ class LatinSquare {
       //tady ted ma bejt krok, kterej rika:
       //-- vyplnujeme 2d mapping (vsechny ostatni zde jsou konstanty, ne funkce), potrebujeme std::map
       //-- pokud mam na vstupu stream of ValueT, prochazej zaroven Topology::Centers a delej dvojice
-      //-- pokud mam na vstupu array of [coords, value] pairs, cti a konertuj
+      //-- pokud mam na vstupu array of [coords, value] pairs, cti a konvertuj
       //-- pokud vyplnuju ReadOnlyMapping, vyzaduj kompletni pokryti Topology::Centers
       //-- pokud vyplnuju ReadWriteMapping, dopln nepritomne Centers defaultni Domainou
       //
@@ -41,7 +41,7 @@ class LatinSquare {
       //mozna bych umel vymyslet komplikovanejsi verzi, ale pro zacatek predpokladejme,
       //ze kazda implementace ma prave tolik vstupnich parametru jako apply() prislusneho InitStepu
       //a ze check pouzitelnosti implementace a konverze vstupu probiha 1:1 a obnasi tolik co zjistit,
-      //zda uricty vstup InitStepu lze zkonvertovat na pozadovany vstup implementace. Pokud tento
+      //zda urcity vstup InitStepu lze zkonvertovat na pozadovany vstup implementace. Pokud tento
       //postup projde pro vsechny parametry, implementace se zavola a jeji vysledek se pouzije.
       //
       //Takze implementace necht obsahuje std::tuple s typama, ktere ocekava, a mappingy

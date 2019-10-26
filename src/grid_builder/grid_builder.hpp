@@ -12,7 +12,17 @@ char givensStr[] = "givens";
 template<char* id>
 struct InputField {};
 
-template<typename OutputsTo_, typename... Reads_>
+//jednoduche InitStepy maji 3 kroky:
+//1) precti vstupy (z inputu nebo gridu, vzdy konstanty)
+//2) zavolej nejakou metody s nactenymi vstupy
+//3) vysledek metody zapis do dane konstanty v gridu
+//
+//ten slozitej InitStep ma taky 3 kroky:
+//1) nacti (cte input i grid)
+//2) zavolej metodu (ta metoda ale zalezi na formatu vstupu z input)
+//3) zapis (to je stejne jako u jednoducheho stepu, akorat mam mapujici nikoli konstantni mapping,
+//    coz by ale nemel byt vubec zadny rozdil
+template<auto Id, typename OutputsTo_, typename... Reads_>
 class InitStep {
   public:
     using OutputsTo = OutputsTo_;
