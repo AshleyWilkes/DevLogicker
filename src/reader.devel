@@ -25,10 +25,10 @@ a jde pouzit s ruznymi MappingTypy.
 ********************* 2. krok InitStep **********************
 InitStep je tedy pojmenovany vztah mezi nejakymi hodnotami.
 Dale potrebujeme metodu, ktera tu inicializaci, InitStepem popsanou,
-provede nad konkretni instanci Gridu a inputu. K tomu je treba vedet,
-jake MappingTypy jsou pouzity pro jednotlive Mappingy, ktere tento InitStep
-propojuje. Predpokladejme pro jednoduchost, ze vsechny Mappingy maji
-tentyz MappingType.
+provede nad konkretni instanci Gridu a inputu. Pripadne nekolik takovych
+metod, pouzitelnych v ruznych situacich (pro ruzne typy input parametru).
+A potrebujeme wrapper, ktery vsechny implementacni metody zapouzdri
+a umi s nimi pracovat (vybrat, kterou pouzit, a zavolat ji).
 
 Ta implementace probiha ve krocich:
 1) vyndat z gridu hodnoty/mappingy/inputy,

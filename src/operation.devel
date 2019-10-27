@@ -40,6 +40,16 @@ dalsi moznost je nepotrebovat instance Implementaci, jezto implementacni metoda 
   pres niz se k implementacni metode pristupuje, mohou byt static
 nejvhodnejsi zpusob, jak implementace v techto dvou scenarich registrovat k pouziti, neni promyslen
 
+takze wrapper, jak nastinen vyse, je ve skutecnosti staticka trida templatovana idckem relace, kterou
+  wrapuje, s dvema responsibilitami:
+    - spravuje "pole" implementaci, ktere se prihlasi k tomu, ze implementuji prislusnou relaci
+    - poskytuje statickou metodu, jejiz pomoci uzivatel muze vyuzit "sluzeb" prihlasenych implementaci
+
+wrappery pro InitStep a pro Constraint se znacne lisi:
+  - InitStepovy wrapper ma navic parametr input
+  - Constraintovy wrapper pri bootstrapu taky nejak meni obsah Gridu: rozklad Constraintu do Operations
+      vyzaduje pomocne Mappingy, ty musi nejak vzniknout a byt naplneny inicializacnimi hodnotami
+
 now rozdil solver vs grid_builder. Vlastne se zda, ze rozdil neni, az na to, ze grid_builder
   potrebuje input vstupni parametr a solver ne. Dalo by se tedy uvazovat o tom, ze grid_building
   ma dve faze, prvni kopiruje data z inputu do zpocatku prazdneho gridu (interpretujic je pritom,
