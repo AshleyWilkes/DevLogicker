@@ -2,7 +2,7 @@
 #include "boost/dynamic_bitset.hpp"
 #include <jsoncpp/json/json.h>
 #include <string>
-//#include "../input.hpp"
+#include "input/input.hpp"
 /* Notes 17th october 2019, about a year after the rest of this has been written:
  * Nepamatuju si, proc je zakomentovany include "../input.hpp", mel by byt odkomentovany!
  * Prepsal jsem testy do googletest verze; prepis neni "spravne": interface testy
@@ -64,7 +64,7 @@
 //    dve vyjimky za ucelem vyhazovani zde v inputu.
 //
 namespace logicker::core::input {
-  class json_input/* : public input*/ {
+  class json_input : public input {
     public:
       //json_input( const std::string& document );
 

@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "core/grid.hpp.old"
+#include "core/grid/grid.hpp.old"
 #include "catalogue/mapping_type/read_only_mapping.hpp"
 
 namespace {

@@ -56,6 +56,9 @@ class SetT<hana::set<Ts...>> {
     static constexpr type value = hana::make_set( Ts{}... );
 };
 
+template<typename... Ts>
+using makeSetT = SetT<std::tuple<Ts...>>;
+
 template<typename SubSetT, typename SuperSetT>
 inline constexpr bool is_subset = hana::difference( SubSetT::value, SuperSetT::value ) == hana::make_set();
 

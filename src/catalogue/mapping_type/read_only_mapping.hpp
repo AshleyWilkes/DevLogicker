@@ -1,5 +1,5 @@
 #pragma once
-#include "core/mapping_id.hpp"
+#include "core/grid/mapping_id.hpp"
 
 namespace logicker::mapping {
 

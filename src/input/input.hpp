@@ -45,7 +45,5 @@ namespace logicker::core::input {
     public:
       template<typename T>
       const T get( const std::string& name ) const;
-
-      virtual ~input() = 0;
   };
 }
