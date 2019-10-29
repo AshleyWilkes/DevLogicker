@@ -6,7 +6,13 @@
 #include "input/json_input.hpp"
 #include "grid_builder/grid_builder.hpp"
 
+#include "puzzles/elements.hpp"
 #include "puzzles/latin_square.hpp"
+#include "puzzles/magnets.hpp"
+#include "puzzles/mines.hpp"
+#include "puzzles/norinori.hpp"
+#include "puzzles/staircases.hpp"
+#include "puzzles/starbattle.hpp"
 
 //takze tady je misto na integracni test vsech znamych puzzlu
 //ve finalni verzi ma tady byt neco jako 1 parametrizovanej test case,
@@ -57,14 +63,20 @@ core::input::json_input load_input( const std::string& path ) {
 
 template<typename Puzzle>
 void run_puzzle_test( std::string filename ) {
+  using GridBuilder = typename grid_builder::GridBuilder<typename Puzzle::GridRecipe>;
   //precti input file
   auto input = load_input( dirname + filename );
-  //postav grid (zde *uz* predpokladam jediny Recipe, ale *jeste* nemam v GridBuilderu 2 metody)
-  auto built_assignment_grid = grid_builder::GridBuilder<typename Puzzle::GridRecipe>::build( input );
-  //over kompatibilitu typu vysledneho gridu
-  static_assert( type::is_subset<typename Puzzle::MappingIdSet, decltype( built_assignment_grid )> );
-  //maji nasledovat dalsi kroky: buildeni solutiony, assert, ze solutiona je podmnozina assignmentu
-  //assert, ze solutiona splnuje Constraint
+  //postav assgnment grid
+  auto assignment_grid = GridBuilder::build_assignment( input );
+  //over kompatibilitu typu assignment gridu
+  static_assert( type::is_subset<typename Puzzle::MappingIdSet, decltype( assignment_grid )> );
+  //postav solution grid
+  auto solution_grid = GridBuilder::build_solution( input );
+  //over kompatibilitu typu solution gridu
+  static_assert( type::is_subset<typename Puzzle::MappingIdSet, decltype( solution_grid )> );
+  //over, ze solutiona je podmnozina assignmentu
+  //EXPECT_LE( solution_grid, assignment_grid );
+  //ma nasledovat jeste assert, ze solutiona splnuje Constraint
   //
   //v dalsi fazi pripadaji v uvahu spatne solutiony, ktere nesplnuji Constraint
   //a moznost Solvera vyresit Puzzle z assignmentu
@@ -72,6 +84,12 @@ void run_puzzle_test( std::string filename ) {
 
 TEST(IntegrationTest, Puzzles) {
   run_puzzle_test<puzzle::LatinSquare<>>( "latin_square3x3.lgc" );
+  run_puzzle_test<puzzle::Elements<>>( "elements.lgc" );
+  run_puzzle_test<puzzle::Magnets>( "magnets.lgc" );
+  run_puzzle_test<puzzle::Mines>( "mines.lgc" );
+  run_puzzle_test<puzzle::Norinori>( "norinori.lgc" );
+  run_puzzle_test<puzzle::Staircases>( "staircases.lgc" );
+  run_puzzle_test<puzzle::Starbattle>( "starbattle.lgc" );
 }
 
 }

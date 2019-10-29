@@ -3,6 +3,6 @@
 namespace logicker::core::operation::transform {
 
 template<typename ValueT>
-class Domain1ToN {};
+class DomainAnyValue {};
 
 }

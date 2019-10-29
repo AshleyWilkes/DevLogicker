@@ -27,10 +27,13 @@ char givensStr[] = "givens";
 //template<typename ValueT, char* inputFieldId = givensStr>
 //using CentersInitStep = InitStep<catalogue::mapping_id::Centers<ValueT>, ???XXX???, InputField<inputFieldId>, catalogue::mapping_id::Topology>;
 
-template<typename GridRecipe, typename BuiltType = typename GridRecipe::MinimalGridType>
+template<typename GridRecipe>
 class GridBuilder {
   public:
-    static BuiltType build( const core::input::input& ) { return {}; }
+    //tohle je provizorni, az budou metody opravdu neco buildit, urcej si svuj return type samy
+    using BuiltType = typename GridRecipe::MinimalGridType;
+    static BuiltType build_assignment( const core::input::input& ) { return {}; }
+    static BuiltType build_solution( const core::input::input& ) { return {}; }
 };
 
 }

@@ -43,7 +43,7 @@ TEST_F(GridFixture, CopyGrid) {
   EXPECT_EQ( grid_.get<MappingId2>().asMap(), str_values_ );
 }
 
-//test: grid jde zmovovat a  lze pristoupit k hodnotam v kopii (a v originale ne)
+//test: grid jde zmovovat a lze pristoupit k hodnotam v kopii (a v originale ne)
 TEST_F(GridFixture, MoveGrid) {
   Grid moved{ std::move( grid_ ) };
   //test the copy
@@ -53,5 +53,7 @@ TEST_F(GridFixture, MoveGrid) {
   EXPECT_THROW( grid_.get<MappingId1>(), std::domain_error );
   EXPECT_THROW( grid_.get<MappingId2>(), std::domain_error );
 }
+
+//a ted testy na porovnavani gridu pomoci <=
 
 }

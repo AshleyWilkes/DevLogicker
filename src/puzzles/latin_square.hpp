@@ -6,21 +6,23 @@
 
 namespace logicker::puzzle {
 
+using namespace logicker::catalogue;
+
 template<typename ValueT = core::item::Alphanumeric>
 class LatinSquare {
   public:
     using MappingIdSet = type::makeSetT<
-      catalogue::mapping_id::Size,//Mapping<"size", int>
-      catalogue::mapping_id::Square,//Mapping<"topology", Topology> (for internal use when constructing the Grid -- cili to by tady nemuselo byt, musi to pouze byt soucasti Recipe, pokud chci topologii pouzit pri konstrukci centers a regions (coz asi budu chtit:-) )
-      catalogue::mapping_id::Centers<ValueT>,//Mapping<"value", Coords->ValueT>
-      catalogue::mapping_id::AvailableValues<ValueT>,//Mapping<"available_values", Set<ValueT>>
-      catalogue::mapping_id::Regions//Mapping<"regions", Set<Region>>
+      mapping_id::Size,//Mapping<"size", int>
+      mapping_id::Square,//Mapping<"topology", Topology> (for internal use when constructing the Grid -- cili to by tady nemuselo byt, musi to pouze byt soucasti Recipe, pokud chci topologii pouzit pri konstrukci centers a regions (coz asi budu chtit:-) )
+      mapping_id::Centers<ValueT>,//Mapping<"value", Coords->ValueT>
+      mapping_id::AvailableValues<ValueT>,//Mapping<"available_values", Set<ValueT>>
+      mapping_id::Regions//Mapping<"regions", Set<Region>>
     >;
 
     using GridRecipe = grid_builder::GridRecipe<
-      catalogue::init::Size,//mapping::Size <= input.get("size")
-      catalogue::init::AvailableValuesFromSize<ValueT>,//mapping::AvailableValues <= 1..mapping::Size (via operation::ValueT(int))
-      catalogue::init::Square,//mapping::Topology <= mapping::Size (via operation::Square(int))
+      init::Size,//mapping::Size <= input.get("size")
+      init::AvailableValuesFromSize<ValueT>,//mapping::AvailableValues <= 1..mapping::Size (via operation::ValueT(int))
+      init::Square,//mapping::Topology <= mapping::Size (via operation::Square(int))
 
       //tady ted ma bejt krok, kterej rika:
       //-- vyplnujeme 2d mapping (vsechny ostatni zde jsou konstanty, ne funkce), potrebujeme std::map
@@ -54,9 +56,9 @@ class LatinSquare {
       //
       //a jeste je tu jedna vec. tohle Centers je jediny step, ktery se ma chovat jinak pri
       //buildeni assignmentu a pri buildeni solutionu. Ja myslim, ze mam mit jenom jeden recept.
-      catalogue::init::Centers<ValueT>,
+      init::Centers<ValueT>,
 
-      catalogue::init::RowsCols//mapping::Regions <= mapping::Topology (via operation::RowsCols(Topology))
+      init::RowsCols//mapping::Regions <= mapping::Topology (via operation::RowsCols(Topology))
     >;
 };
 
