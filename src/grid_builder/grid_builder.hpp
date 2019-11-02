@@ -27,6 +27,9 @@ char givensStr[] = "givens";
 //template<typename ValueT, char* inputFieldId = givensStr>
 //using CentersInitStep = InitStep<catalogue::mapping_id::Centers<ValueT>, ???XXX???, InputField<inputFieldId>, catalogue::mapping_id::Topology>;
 
+//dokud se nezjisti, ze takovyhle pristup neni dostatecne obecny, je rozdil mezi build_assignment a build_solution jediny:
+//Extractory hledaji InputFieldy primarne v rootu inputu. Pokud tam InputField neni, hleda ho build metoda jeste v dodatecnem
+//subinputu; tento subinput je ??givens?? pro assignment a ??solution?? pro solution
 template<typename GridRecipe>
 class GridBuilder {
   public:

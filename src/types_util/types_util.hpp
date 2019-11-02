@@ -40,6 +40,7 @@ class SetT<std::tuple<Ts...>> {
   public:
     using type = decltype( hana::make_set( hana::type_c<Ts>... ) );
     static constexpr type value = hana::make_set( hana::type_c<Ts>... );
+    using tuple = std::tuple<Ts...>;
 };
 
 template<typename... Ts>
@@ -47,6 +48,7 @@ class SetT<SetT<Ts...>> {
   public:
     using type = typename SetT<Ts...>::type;
     static constexpr type value = SetT<Ts...>::value;
+    using tuple = typename SetT<Ts...>::tuple;
 };
 
 template<typename... Ts>
@@ -54,6 +56,7 @@ class SetT<hana::set<Ts...>> {
   public:
     using type = hana::set<Ts...>;
     static constexpr type value = hana::make_set( Ts{}... );
+    using tuple = std::tuple<Ts...>;
 };
 
 template<typename... Ts>

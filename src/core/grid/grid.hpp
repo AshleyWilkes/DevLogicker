@@ -1,4 +1,9 @@
 #pragma once
+#include "core/grid/managed_id.hpp"
+#include "core/grid/managed_type.hpp"
+#include "core/grid/managed_slot.hpp"
+#include "core/grid/managed_value.hpp"
+#include "core/grid/managed_map.hpp"
 
 //chtelo by to mit jmena pro nekolik stupnu na ceste od ManagedValueId
 //k full instantiated Gridu:
@@ -18,7 +23,7 @@
 //      jinak tez dvojice [jmeno, ManagedValueType],
 //      jinak tez trojice [jmeno, typHodnoty, ManagementType]
 //ManagedMapSlot -- kompatibilni dvojice [ManagedMapId, ManagedMapType],
-//      jinak tez dvojice [jmeno, ManagedValueType...]
+//      jinak tez trojice [jmeno, typKlice, ManagedValueType...]
 //
 //ManagedSlotsSet -- mnozina, jejimiz prvky jsou ManagedValueSlots a ManagedMapSlots
 //
@@ -39,10 +44,10 @@ class Grid {
 };
 
 //pozadavky:
-//rhs musi obsahovat vsechny MappingIds, ktere obsahuje lhs -- static_assert
+//rhs musi obsahovat vsechny MappingIds, ktere obsahuje lhs -- static_assert nad ManagedIdsSets
 //kazdy Mapping v lhs musi byt podmnozinou Mappingu v rhs -- volani porovnani na mappingach
 template<template<typename...> typename MT1, typename GT1, template<typename...> typename MT2, typename GT2>
-bool operator<=( const Grid<MT1, GT1>& lhs, const Grid MT2, GT2>& rhs ) {
+bool operator<=( const Grid<MT1, GT1>& lhs, const Grid <MT2, GT2>& rhs ) {
   return false;
 }
 

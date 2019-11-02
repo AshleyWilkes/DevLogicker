@@ -64,6 +64,9 @@ using NonEmptySet = type::SetT<Tuple_I>;
 //test: lze vytvorit SetT z SetT
 using CopiedSet = type::SetT<NonEmptySet>;
 
+//test: SetT umi vratit svuj obsah jako std::tuple
+static_assert(std::is_same_v<typename NonEmptySet::tuple, Tuple_I>);
+
 //test: SetT vytvoreny ze SetT is_same_set jako ten puvodni
 static_assert(type::is_same_set<NonEmptySet, CopiedSet>);
 

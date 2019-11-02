@@ -13,6 +13,7 @@
 #include "puzzles/norinori.hpp"
 #include "puzzles/staircases.hpp"
 #include "puzzles/starbattle.hpp"
+#include "puzzles/sudoku_classic.hpp"
 
 //takze tady je misto na integracni test vsech znamych puzzlu
 //ve finalni verzi ma tady byt neco jako 1 parametrizovanej test case,
@@ -90,6 +91,7 @@ TEST(IntegrationTest, Puzzles) {
   run_puzzle_test<puzzle::Norinori>( "norinori.lgc" );
   run_puzzle_test<puzzle::Staircases>( "staircases.lgc" );
   run_puzzle_test<puzzle::Starbattle>( "starbattle.lgc" );
+  run_puzzle_test<puzzle::SudokuClassic>( "sudoku_classic.lgc" );
 }
 
 }

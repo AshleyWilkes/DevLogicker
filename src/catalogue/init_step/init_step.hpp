@@ -2,6 +2,7 @@
 
 #include "core/item/topology/rows_cols.hpp"
 #include "core/item/topology/square.hpp"
+#include "core/item/topology/sudoku_classic_small_squares.hpp"
 #include "core/operation/transform/domain_1_to_n.hpp"
 #include "core/operation/transform/domain_any_value.hpp"
 #include "core/operation/transform/identity.hpp"
@@ -101,6 +102,12 @@ using Square =
     mapping_id::Square,
     core::item::topology::Square,
     mapping_id::Size>;
+
+using SudokuSmallSquares = 
+  grid_builder::InitStep<
+    mapping_id::Regions,
+    core::item::topology::SudokuClassicSmallSquares
+  >;
 
 char uDirectionStr[] = "directionClues";
 template<typename ClueType, auto inputField = uDirectionStr>

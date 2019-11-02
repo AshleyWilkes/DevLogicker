@@ -8,7 +8,7 @@ using namespace logicker::catalogue;
 
 char starsCountStr[] = "starsCount";
 
-class StarbattleImple {
+class StarbattleImpl {
   public:
     using GridRecipe = grid_builder::GridRecipe<
       init::Size,
@@ -19,6 +19,6 @@ class StarbattleImple {
     >;
 };
 
-using Starbattle = core::Puzzle<StarbattleImple>;
+using Starbattle = core::Puzzle<StarbattleImpl>;
 
 }
