@@ -50,11 +50,11 @@ OperationImpl:
       musi mit nejaky mechanismus, jak se worker muze dozvedet, jak vyse zminena
       metoda vypada, aby se mohl rozhodnout, zda ji muze a chce v dane situaci
       zavolat.
-  inu a ta metoda tedy muze byt templata s jednim template template
+  /*inu a ta metoda tedy muze byt templata s jednim template template
       parametrem, ktery predstavuje typ toho SolverValues, a parametry
       te metody pak mohou byt (SolverValues<OutputT>, SolverValues<InputTs>...>)
       a vystupem muze byt nejaka datova struktura, obsahujici info o nalezene
-      dedukci a o tom, na ktery SolverValues plati.
+      dedukci a o tom, na ktery SolverValues plati.*/
   slusne vychovana OperationA poskytuje v namespace logicker::operation
       defaultni implementaci, parametrizovanou nejakou BasicSolverValues,
       ktera dokaze delat trivialni dedukce; v terminologii predstavy o

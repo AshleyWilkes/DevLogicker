@@ -1,4 +1,4 @@
-takze u implementace predpokladame rozdeleni do dvou casti:
+akze u implementace predpokladame rozdeleni do dvou casti:
 vypocetni metoda samotna, zda se, ze se vyskytuje ve dvou formach:
 - hodnotova: vstupy jsou konkretni hodnoty, vystup je taky hodnota; pokud je tato operace relation-based,
   musi implementace specifikovat nejen, ke ktere relaci patri, ale i kterou z hodnot, jez relace
@@ -27,7 +27,7 @@ dalsi problem je, ze zname wrappery musi nekde bydlet, aby si je solver mohl vol
 zakladni otazka je, jestli wrappery maji existovat v runtime nebo jestli to maji byt jen compile-time
   abstrakce a zkompilovany kod ma uz mit v sobe primo volani vypocetnich metod. Zda se mi mirne
   snazsi implementovat dynamickou verzi, takze volim tuto.
-na urovni namespace solver existuji templatovane promenne (staticke lokalni promenne templatovane metody)
+v namespacu ??solver?? existuji templatovane promenne (staticke lokalni promenne templatovane metody)
   pro kazdy typ operace, resp. relace; promenna je typu std::vector<ImplWrapper>; kazda slusne vychovana
   implementace dedi nejakeho predka, jenz jako soucast sveho konstruktoru vola metodu, ktera ho do teto
   promenne zaregistruje; kazda slusne vychovana implementace ve svem cpp souboru z tohoto duvodu take
@@ -82,3 +82,140 @@ jiny pohled: rozdil mezi solverem a grid_builderem je zcela zasadni. faze, jak j
   mnoho a jsou dost zasadni; rozhodne nema cenu mit jeden specializovany objekt, ktery bude umet
   delat oboji. Neni nutne zcela rezignovat na moznost, ze by nektere casti kodu pouzivaly obe operace,
   ale znacna cast funkcionality ma byt implementovana pro kazdou operaci zvlast.
+
+Novejsi pohled:
+Ackoli jsou na prvni pohled relace a operace na jedne strane a solve a grid_builder na druhe strane
+zdanlive sobe velmi podobne, ve skutecnosti se v nekterych ohledech dramaticky lisi.
+grid_builder pracuje s implementacemi operaci; ty vraceji primo spoctene hodnoty
+solver pracuje s implementacemi relaci; ty vraceji dedukce
+Analogicky popis v GridRecipe pouziva Operations
+zatimco Constraints pouzivaji Relations.
+Ona podobnost, ktera me az dosud matla, vychazi z toho, ze Operation je zvlastni pripad of Relation;
+tohoto vztahu mezi Operation a Relation lze vsak vyuzit vyhradne pri trivialni implementaci of Relations,
+jinak mi k nicemu dobra neni: grid_builder vyuziva prave tech vlastnosti, jimiz se Operation od
+Relation lisi, a solver zase pracuje vyhradne s Relations.
+
+Proto pristupuju k obema castem jednotlive, ke kazde zvlast. Jednodussi i prirozene drive na rade
+je grid_builder + operations, takze temi zacinam.
+Postup zpracovani InitStepu je tedy nasledujici:
+1) extract hodnoty z inputu anebo Gridu; vsechny hodnoty musi existovat. Pri extrahovani hodnot
+  z inputu nevim dopredu, jakeho jsou typu, u hodnot z Gridu to vim
+2) urcit vyslednou hodnotu pomoci Operation, ktera je v InitStepu uvedena. To obnasi
+  a) grid_builder zavola metodu s neznamymi typy parametru, ktera wrapuje zname implementace prislusne
+    Operationy.
+  b) tato wrapovaci metoda se pokusi pomoci svych znamych impementaci urcit vyslednou hodnotu a
+        vratit ji, kdyz se to nepovede, vyhodi vyjimku. Tedy pro kazdou implementaci:
+    b1) zjisit, jestli umim zkonvertit svoje argumenty na parametry, ktere chce implementace:
+      argument uz ma spravny typ anebo
+      argument je typu int a jde na nem zavolat get<ocekavany typ>()
+    b2) kdyz se povedlo udelat b1), tak vyvolat metodu a vratit jeji navratovou hodnotu
+3) zapsat vyslednou hodnotu do mappingu, ktery je uveden v InitStepu.
+
+Postup pri zpracovani Relace jakozto soucasti Constraintu je mirne slozitejsi, ale znacne
+analogicky. (Zasadni rozdil je v tom, ze zatimco InitStepy se provadeji po jednom jednotlive
+a kazdy jeden se napred kompletne dodela, nez se jde na dalsi, Constrainty se vyhodnocuji
+"vsechny najednou". Toto all-at-once vyhodnocovani bude asi trochu optimalizovane, ale konceptualne
+se nebude lisit od situace, kdy kazdy kousek Constraintu pri svem tahu udela vsechny 3 kroky.)
+Ma zcela analogicke 3 kroky:
+
+1) extract hodnot z Gridu. O hodnotach vim, ze jsou to ManagedValues, znam type, neznam management_type.
+2) pokusit se najit nejakou dedukci, ktera z hodnot a Constraintu plyne. K tomu prochazim zname 
+    implementace a pro kazdou zkusim
+    b1) zkonvertit argumenty
+    b2) zavolat implementaci, kdyz b1) byl success
+3) vyslednou hodnotu zabalit do dedukce (pokud je to treba) a tuto dedukci vratit
+
+***?Finalni pohled s teoreticky vyjasnenymi zaklady?***
+Mame 2 blizce pribuzne terminy: Relation a Operation. Operation s aritou n je vztah mezi n+1 hodnotami,
+kde prvnich n hodnot je vstupnich, a jsou-li specifikovany, Operation stanovuje, jaka je n+1. hodnota.
+Relation s aritou n je vztah mezi n hodnotami; pro danou n-tici Relation stanovuje, zda n-tice je prvkem
+of Relation anebo ne. Relations i Operations oznacuju jmenem, semanticky vyznam kazdeho jmena je
+specifikovan; tyto dva terminy jsou zakladni pojmy Logickerovych popisu Puzzlu.
+
+Existovaly-li by defaultni implementace, pak by Operation mela metodu
+OutT operator()( InTs... )
+a Relation by mela metodu
+bool operator()( Ts... )
+
+Omezim-li se na konecne ValueSety, pak oba pojmy pripousteji neprilis komplikovane implementace
+obecnejsiho pojeti svych vypocetnich metod: verze pro ValueSety. Operation ma tuto:
+ValueSet<OutT> operator()( ValueSet<InTs>... )
+a Relation tuto:
+std::vector<Deduction> operator()( ValueSet<Ts>... )
+Zde Deduction je jedna z trojice Error, CantContain, MustContain; prvni signalizuje, ze Relation
+nelze splnit, druha a treti specifikuji jeden z ValueSetu a hodnotu, ktera v nem musi/nesmi byt.
+
+Velmi dulezity je vztah mezi Relations a Operations navzajem. 
+1) Relation => Operation
+Pro vhodnou Relation a vhodnou jeji hodnotu lze Operation specifikovat jako dvojici [Relation, Value];
+jde to v pripade, ze Relace umoznuje zvolenou hodnotu urcit z ostatnich, neboli ze pro kazdou n-1 tici
+ostatnich hodnot existuje prave jedna Value, tak aby pridana k n-1 tici vytvorila n-tici, ktera relaci
+splnuje. Takze Operation muze byt popsana dvojici [Relation, int]; pro Relation s aritou n vznikne
+Operation s aritou n-1.
+2) Operation => Relation
+Pro libovolnou Operation lze zadefinovat Relation, ktera je splnena, pokud jeji posledni hodnota
+je stejna jako vysledek Operation aplikovany na predchozi hodnoty. Tato Operation muze byt popsana
+pomoci pouze [Operation]; pro Operation s aritou n vznikne Relation s aritou n+1.
+
+Tyto vztahy tedy umoznuji popisovat Operations in terms of Relations and vice versa. (A tedy definovat
+typy Relation<Operation> a Operation<Relation, int> s nejakou vhodnou semantikou, conceptama atd. Toto
+vidim jako znacne dulezity aspekt, ktery v dalsim zprecizuju.)
+
+***Implementace Relations a Operations a jejich "seznamy"***
+Jadrem veskereho dedukovani v Logickeru jsou implementace Relations a Operations. Implementaci
+zde rozumime classu, ktera ma vhodnou vypocetni metodu, tj. ??statickou metodu nebo operator()??,
+jejiz hlavicka odpovida hodnotam Relationy/Operationy a pripadne nejakemu typu nebo nejakym typum
+ValueSet. (Ted neni jiste, ze budu mit vic nez jeden ValueSet v pravem slova smyslu, ale v predchozi
+vete je nutno i prostou hodnotu typu T povazovat za ValueSet<T>).
+
+Implementace budou nekde zaregistrovany, coz uz je tady nekde nejak popsano. Registrovany budou pod
+svym typem, tj. Relace zvlast, Operace zvlast. Kdo chce implementaci pouzit, musi typ znat/odvodit,
+coz by snad s ohledem na vyse uvedeny popis melo byt trivialni.
+
+***Wrapy Relations a Operations a jejich uziti ve workerech***
+Worker objekty jsou konfigurovany by Relations a Operations. Run-time reprezentaci techto Relations
+a Operations uvnitr Workeru rikam Wrapy. Wrap je konfigurovan identifikatorem (typem) "sve" Relation
+or Operation a ma k dispozici nejakou formu input parametru, ktera se nejspis lisi pro ruzne druhy
+Wrapu (napr. InitStep vypada jinak nez ConstraintStep).
+
+***Konverze tuplu parametru na rozhrani mezi Wrapem a Implementaci***
+Wrap muze (typicky primo musi) pouzit implementaci sve Operation/Relation, ktera (ta implementace)
+operuje nad jinymi typy parametru nez ma primo k dispozici onen Wrap. Potrebuje tedy mit k dispozici
+zpusob, jak provest (je-li to mozne) konverzi svych parametru na parametry, ktere vyzaduje Implementace.
+
+Nezda se, ze by bylo potreba ci vhodne pouzivat pri vyhodnocovani urcite Operation/Relation implementace,
+tykajici se jine Operation/Relation, zrovna jako se nezda ucelne pouzit implementaci Relace pri
+vyhodnocovani Operation, a proto by melo byt mozne vystacit si s dvema druhy konverzi tuplu
+parametru (ktere obe jsou zalozene na 1:1 konverzi jednotlivych parametru, popsane nize). Prvni
+druh konverze je trivialni 1:1 konverze tuplu: ma vstupni a vystupni tuple, oba stejne delky, a 
+funguje, pokud pro kazdy index i lze provest konverzi i-teho parametru vstupniho tuple na i-ty
+parametr vystupniho tuplu. Druha je velmi podobna, rozdil je v tom, ze vstupni tuple je o 1
+delsi nez vystupni tuple a pri konverzi se jedna hodnota (jejiz index je dan) vypusti.
+
+***Konverze jedineho parametru***
+Pokud neco neprehlizim, nastavaji dve situace:
+a) v InitStepu mam na vstupu input a potrebuju jej zkonvertit na konkretni typ T. Stavajici interface
+    na to nema metodu a mel by ji mit. Cili krome metody get<T>, ktera uz tam je, ma mit jeste
+    (run-time) metodu can_get<T>, ktera vraci bool. Anebo pripada v uvahu vyuzit toho, ze get<T>
+    vyhodi vyjimku, pokud je konverze nepripustna; zde je treba proverit, jak presne mam API
+    inputu formulovane, a prip. upravit.
+b) v ConstraintWrapu mam na vstupu ManagedValues a potrebuju jej zkonvertit bud na konkretni typ T
+    anebo na ValueSet<T>. Tedy ManagedValue ma mit v sobe checkovaci a konverni metodu; zde lehce
+    narazime na to, co je to ValueSet, kde je definovany a co o nem ManagedValue vi/ma vedet.
+
+***Prakticke pouziti***
+Mam dva pripady:
+a) InitStep, ktery je parametrizovany by Operation. Ten projde vsechny zname implementace teto Operation
+    a to je vsechno. Pri prochazeni pouziva vyhradne konverzi 1:1 s konkretnimi vyslednymi typy T.
+b) ConstraintStep, ktery je parametrizovany by Relation. Ten prochazi vetsi mnozstvi implementaci:
+  b1) implementace primo teto Relation. Zde se typicky malokdy stane, ze bych mel k dispozici
+    vsechny hodnoty primo jako typy T, a tudiz defaultni implementaci pujde jen malokdy pouzit.
+    Vetsinou se stane, ze nektere konkretni hodnoty jeste nebudu znat a tudiz pouziju jejich ValueSety
+    a tedy ValueSetovou implementaci Relationy. Tato implementace (predpokladam, ze bude typicky
+    jedina) je k dispozici pod implementacemi of Relation.
+  b2) implementace Operations, ktere z teto relace vyplyvaji. Ty jsou pravdepodobne uzitecne
+    jen jako zkratky v situaci, kdy vsechny-but-one hodnoty jsou jiz definitivni, a neni treba
+    volat casove presumably narocnejsi implementaci Relationy.
+  Tedy vysledkem uvah na toto tema je pro tuto chvili predstava, ze ConstraintStep vlastne typicky
+    taky vola jen jednu vypocetni metodu a ze je to tato metoda, co ma byt "optimalizovano" pro
+    ruzne pripady "obsazenosti" vstupnich hodnot.
