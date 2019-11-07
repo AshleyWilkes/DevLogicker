@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types_util/types_util.hpp"
+#include "core/grid/managed_type.hpp"
 
 namespace logicker::core::grid {
 
@@ -12,6 +13,7 @@ struct ManagedValueSlotImpl : ManagedSlot {
     static constexpr auto name = name_;
     using valueType = valueType_;
     using managementType = managementType_;
+    using managedType = ManagedValueType<valueType_, managementType_>;
 };
 
 template<typename valueId_, typename valueType_>
@@ -37,6 +39,7 @@ struct ManagedMapSlotImpl<name_, keyType_, std::tuple<valueTypes_...>> : Managed
     using keyType = keyType_;
     using valueTypesTuple = std::tuple<valueTypes_...>;
     using valueTypesSet = type::SetT<valueTypesTuple>;
+    using managedType = ManagedMapType<keyType_, valueTypes_...>;
 };
 
 template<typename mapId_, typename mapType_>

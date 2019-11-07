@@ -38,6 +38,8 @@ static_assert(MValueSlot::name == valueStr);
 static_assert(std::is_same_v<typename MValueSlot::valueType, int>);
 //zna svuj typ managementu
 static_assert(std::is_same_v<typename MValueSlot::managementType, DummyManagementType<int>>);
+//zna svuj managedType
+static_assert(std::is_same_v<typename MValueSlot::managedType, ManagedValueType<int, DummyManagementType<int>>>);
 //vytvoren ruznymi zpusoby dava stejny typ
 static_assert(std::is_same_v<MValueSlot, MValueSlot2>);
 
@@ -57,6 +59,9 @@ static_assert(
     || std::is_same_v<typename MMapSlot::valueTypesTuple, std::tuple<MValueTypeF, MValueTypeI>>);
 //zna set svych ManagedValueTypes
 static_assert(type::is_same_set<typename MMapSlot::valueTypesSet, type::makeSetT<MValueTypeI, MValueTypeF>>);
+//zna svuj managedType
+static_assert(std::is_same_v<typename MMapSlot::managedType, ManagedMapType<bool, MValueTypeI, MValueTypeF>>
+    || std::is_same_v<typename MMapSlot::managedType, ManagedMapType<bool, MValueTypeF, MValueTypeI>>);
 //vytvoren ryznymi zpusoby dava stejny typ
 //TODO: toto neni spravny test ani spravna idea: dva MapSloty maji predstavovat stejny typ
 //  bez ohledu na to, v jakem poradi byly v definici uvedeny typy jednotlivych ManagedValues

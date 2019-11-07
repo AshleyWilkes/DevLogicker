@@ -31,9 +31,23 @@
 //
 //Grid je instancializovany ManagedSlotsSet v tom smyslu, ze kazdemu ManagedXXXSlotu je prirazena jedna instance ManagedXXX
 
-namespace logicker::core {
+namespace logicker::core::grid {
 
-template<template<typename...> typename MappingType, typename GridType>
+template<typename... MSlot>
+class GridImpl;
+
+template<typename... MSlot>
+class GridImpl<std::tuple<MSlot...>> {
+  private:
+    using InnerTuple = std::tuple<typename MSlot::managedType...>;
+    InnerTuple instances_;
+  public:
+};
+
+template<typename GridType>
+using Grid = GridImpl<typename GridType::tuple>;
+
+/*template<template<typename...> typename MappingType, typename GridType>
 class Grid {
   public:
     template<typename MappingId>
@@ -41,14 +55,14 @@ class Grid {
 
     template<typename MappingId>
     void set( const std::map<typename MappingId::KeyT, typename MappingId::ValueT>& values );
-};
+};*/
 
 //pozadavky:
 //rhs musi obsahovat vsechny MappingIds, ktere obsahuje lhs -- static_assert nad ManagedIdsSets
 //kazdy Mapping v lhs musi byt podmnozinou Mappingu v rhs -- volani porovnani na mappingach
-template<template<typename...> typename MT1, typename GT1, template<typename...> typename MT2, typename GT2>
+/*template<template<typename...> typename MT1, typename GT1, template<typename...> typename MT2, typename GT2>
 bool operator<=( const Grid<MT1, GT1>& lhs, const Grid <MT2, GT2>& rhs ) {
   return false;
-}
+}*/
 
 }
