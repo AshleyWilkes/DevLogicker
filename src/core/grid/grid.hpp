@@ -5,6 +5,8 @@
 #include "core/grid/managed_value.hpp"
 #include "core/grid/managed_map.hpp"
 
+#include <boost/hana.hpp>
+
 //chtelo by to mit jmena pro nekolik stupnu na ceste od ManagedValueId
 //k full instantiated Gridu:
 //
@@ -33,19 +35,108 @@
 
 namespace logicker::core::grid {
 
+//make_slot_instance ma vzit Slot a vratit instanci ManagedXXX
+template<typename Slot>
+struct SlotInstance;
+
+template<auto name_, typename valueType_, typename managementType_>
+struct SlotInstance<ManagedValueSlotImpl<name_, valueType_, managementType_>> {
+  public:
+    using type = ManagedValue<valueType_, managementType_>;
+};
+
+template<auto name_, typename keyType_, typename... valueTypes_>
+struct SlotInstance<ManagedMapSlotImpl<name_, keyType_, std::tuple<valueTypes_...>>> {
+  public:
+    using type = ManagedMapImpl<keyType_, std::tuple<valueTypes_...>>;
+};
+
+template<typename MSlot>
+struct MSlotPairBuilder;
+
+template<auto name_, typename valueType_, typename managementType_>
+struct MSlotPairBuilder<ManagedValueSlotImpl<name_, valueType_, managementType_>> {
+  public:
+    static inline auto value = boost::hana::make_pair(boost::hana::type_c<ManagedValueId<name_, valueType_>>, typename SlotInstance<ManagedValueSlotImpl<name_, valueType_, managementType_>>::type{});
+};
+
+template<auto name_, typename keyType_, typename... valueTypes_>
+struct MSlotPairBuilder<ManagedMapSlotImpl<name_, keyType_, std::tuple<valueTypes_...>>> {
+  public:
+    static inline auto value = boost::hana::make_pair(boost::hana::type_c<ManagedMapId<name_, keyType_, typename valueTypes_::ValueType...>>, typename SlotInstance<ManagedMapSlotImpl<name_, keyType_, std::tuple<valueTypes_...>>>::type{});
+};
+
+template<typename MSlot>
+auto MSlotPair = MSlotPairBuilder<MSlot>::value;
+
 template<typename... MSlot>
 class GridImpl;
 
+//Toto ma reprezentovat tuple instancializovanych ManagedXXXu, kazdy oindexovany svym ManagedId. Right?
+//takze to asi musim vyst pres run-time hana::mapu, ktera ma jako klice hana::type_c<>
+//  prislusneho ManagedId. Ke kazdemu klici nalezi hodnota typu ManagedXXX, vytvorena pomoci
+//  SlotInstance, coz patri sem do tohoto souboru, protoze je prvni, ktery dava dohromady
+//  sloty a instance
+//
 template<typename... MSlot>
 class GridImpl<std::tuple<MSlot...>> {
   private:
-    using InnerTuple = std::tuple<typename MSlot::managedType...>;
-    InnerTuple instances_;
+    //using InnerTuple = std::tuple<typename SlotInstance<MSlot>::type...>;
+    //InnerTuple instances_;
+    using Instances = decltype(boost::hana::make_map(MSlotPair<MSlot>...));
+    Instances instances_ = boost::hana::make_map(MSlotPair<MSlot>...);
   public:
+    using MSlotsSet = type::SetT<std::tuple<MSlot...>>;
+
+    template<typename MId>
+    auto& get() {
+      return instances_[boost::hana::type_c<MId>].getInstance();
+    }
+
+    /*template<auto name>
+    auto get() {
+      return nullptr;
+    }*/
 };
 
-template<typename GridType>
-using Grid = GridImpl<typename GridType::tuple>;
+//jde vytvorit z vyjmenovanych MValueIds a zadaneho ManagementTypu
+//using Grid1 = Grid<MValueId, MMapIdBIF, DummyManagementType>;
+//jde vytvorit ze setu MValuesIds a zadaneho ManagementTypu
+//using Grid2 = Grid<MValuesIds, DummyManagementType>;
+//jde vytvorit ze zadaneho MSlotsSetu
+//using Grid3 = Grid<MSlotsSet>;
+
+template<typename... Args>
+struct GridHelper;
+
+template<typename... MIds, typename ManagementType>
+struct GridHelper<ManagementType, MIds...> {
+  public:
+    using type = GridImpl<typename ManagedSlotsSetFromIds<ManagedIdsSet<MIds...>, ManagementType>::tuple>;
+};
+
+template<typename... MIds, typename ManagementType>
+struct GridHelper<ManagementType, ManagedIdsSet<MIds...>> {
+  public:
+    using type = GridImpl<typename ManagedSlotsSetFromIds<ManagedIdsSet<MIds...>, ManagementType>::tuple>;
+};
+
+template<typename... MSlots>
+struct GridHelper<ManagedSlotsSet<MSlots...>> {
+  public:
+    using type = GridImpl<typename ManagedSlotsSet<MSlots...>::tuple>;
+};
+
+template<typename... Args>
+using Grid = typename GridHelper<Args...>::type;
+
+//gridy jsou povazovany za stejny, kdyz maji stejnej set MSlotu. Tj. stejny id, type *i* management!
+//jeden grid je subgridem druhyho, kdyz kazdej jeho MSlot je subslotem odpovidajiciho slotu v druhym Gridu
+//  Subslot S1 slotu S2 ma stejne id a typ jako S2 a dale "kazda hodnota, ktera se da napsat do S1, se da
+//      napsat i do S2". Toto subslotovani vyzaduje specializovat na konkretni typy ManagementTypu,
+//      takze vlastne neni jasne, kam patri jeho implementace...
+template<typename G1, typename G2>
+inline constexpr bool is_same_v = type::is_same_set<typename G1::MSlotsSet, typename G2::MSlotsSet>;
 
 /*template<template<typename...> typename MappingType, typename GridType>
 class Grid {

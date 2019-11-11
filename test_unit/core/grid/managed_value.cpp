@@ -1,13 +1,14 @@
 #include "gtest/gtest.h"
-#include "core/grid/grid.hpp"
+#include "core/grid/managed_value.hpp"
+#include "core/grid/managed_type.hpp"
 #include "core/grid/common.hpp"
 
 namespace {
 
-using MValueTypeI = ManagedValueType<int, DummyManagementType<int>>;
+using MValueTypeI = ManagedValueType<int, typename DummyManagementType::type<int>>;
 
 using MValue = ManagedValue<MValueTypeI>;
-using MValue2 = ManagedValue<int, DummyManagementType<int>>;
+using MValue2 = ManagedValue<int, typename DummyManagementType::type<int>>;
 
 //ManagedValue:
 //templatovan na jedne strane MValueTypem a na druhe strane odpovidajici dvojici <type, managementType>

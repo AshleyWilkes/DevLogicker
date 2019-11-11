@@ -1,12 +1,13 @@
 #include "gtest/gtest.h"
-#include "core/grid/grid.hpp"
+#include "core/grid/managed_type.hpp"
+#include "core/grid/managed_map.hpp"
 #include "core/grid/common.hpp"
 
 namespace {
 
-using MValueTypeI = ManagedValueType<int, DummyManagementType<int>>;
-using MValueTypeB = ManagedValueType<bool, DummyManagementType<bool>>;
-using MValueTypeF = ManagedValueType<float, DummyManagementType<float>>;
+using MValueTypeI = ManagedValueType<int, typename DummyManagementType::type<int>>;
+using MValueTypeB = ManagedValueType<bool, typename DummyManagementType::type<bool>>;
+using MValueTypeF = ManagedValueType<float, typename DummyManagementType::type<float>>;
 
 using MMapType = ManagedMapType<bool, MValueTypeI, MValueTypeB>;
 

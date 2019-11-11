@@ -7,6 +7,7 @@ class ManagedValueImpl {
   public:
     using ValueType = valueType_;
     using InstanceType = instanceType_;
+    using managementType = instanceType_;
 
     template<typename... Args>
     ManagedValueImpl( Args&&... args ) : instance{ std::forward<Args>( args )... } {}

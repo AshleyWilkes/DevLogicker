@@ -1,11 +1,14 @@
 #include "gtest/gtest.h"
+#include "types_util/types_util.hpp"
 #include "core/grid/managed_type.hpp"
 #include "core/grid/common.hpp"
 
 namespace {
 
-using MValueTypeI = ManagedValueType<int, DummyManagementType<int>>;
-using MValueTypeF = ManagedValueType<float, DummyManagementType<float>>;
+namespace type = logicker::type;
+
+using MValueTypeI = ManagedValueType<int, typename DummyManagementType::type<int>>;
+using MValueTypeF = ManagedValueType<float, typename DummyManagementType::type<float>>;
 using MMapType = ManagedMapType<bool, MValueTypeI, MValueTypeF>;
 using InvalidMMapType = ManagedMapType<bool, int>;
 
@@ -13,7 +16,7 @@ using InvalidMMapType = ManagedMapType<bool, int>;
 //zna svuj typ hodnoty
 static_assert(std::is_same_v<typename MValueTypeI::valueType, int>);
 //zna svuj typ managementu
-static_assert(std::is_same_v<typename MValueTypeI::managementType, DummyManagementType<int>>);
+static_assert(std::is_same_v<typename MValueTypeI::managementType, typename DummyManagementType::type<int>>);
 //
 //ManagedMapType:
 //nejde vytvorit s typem, kterej neni ManagedValue

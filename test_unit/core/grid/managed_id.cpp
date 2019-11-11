@@ -4,6 +4,8 @@
 
 namespace {
 
+namespace type = logicker::type;
+
 char valueStr[] = "value";
 using MValueId = ManagedValueId<valueStr, int>;
 

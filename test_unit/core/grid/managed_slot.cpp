@@ -1,10 +1,11 @@
 #include "gtest/gtest.h"
 #include "core/grid/managed_id.hpp"
-#include "core/grid/managed_type.hpp"
 #include "core/grid/managed_slot.hpp"
 #include "core/grid/common.hpp"
 
 namespace {
+
+namespace type = logicker::type;
 
 char valueStr[] = "value";
 using MValueId = ManagedValueId<valueStr, int>;
@@ -12,8 +13,10 @@ using MValueId = ManagedValueId<valueStr, int>;
 char mapStr[] = "map";
 using MMapIdBIF = ManagedMapId<mapStr, bool, int, float>;
 
-using MValueTypeI = ManagedValueType<int, DummyManagementType<int>>;
-using MValueTypeF = ManagedValueType<float, DummyManagementType<float>>;
+using MIdsSet = ManagedIdsSet<MValueId, MMapIdBIF>;
+
+using MValueTypeI = ManagedValueType<int, typename DummyManagementType::type<int>>;
+using MValueTypeF = ManagedValueType<float, typename DummyManagementType::type<float>>;
 
 using MMapType = ManagedMapType<bool, MValueTypeI, MValueTypeF>;
 
@@ -24,7 +27,8 @@ using MMapSlot = typename ManagedMapSlotFromId<MMapIdBIF, MMapType>::type;
 using MMapSlot2 = typename ManagedMapSlotFromName<mapStr, bool, MValueTypeI, MValueTypeF>::type;
 
 using InvalidMSlotsSet = ManagedSlotsSet<MValueId>;
-using MSlotsSet = ManagedSlotsSet<MValueSlot, MMapSlot>;
+using MSlotsSet = ManagedSlotsSetFromSlots<MValueSlot, MMapSlot>;
+using MSlotsSet2 = ManagedSlotsSetFromIds<MIdsSet, DummyManagementType>;
 
 //ManagedValueSlot:
 //nejde vytvorit z nekompatibilni dvojice [ManagedValueId, ManagedValueType]
@@ -37,9 +41,9 @@ static_assert(MValueSlot::name == valueStr);
 //zna svuj typ hodnoty
 static_assert(std::is_same_v<typename MValueSlot::valueType, int>);
 //zna svuj typ managementu
-static_assert(std::is_same_v<typename MValueSlot::managementType, DummyManagementType<int>>);
+static_assert(std::is_same_v<typename MValueSlot::managementType, typename DummyManagementType::type<int>>);
 //zna svuj managedType
-static_assert(std::is_same_v<typename MValueSlot::managedType, ManagedValueType<int, DummyManagementType<int>>>);
+static_assert(std::is_same_v<typename MValueSlot::managedType, ManagedValueType<int, typename DummyManagementType::type<int>>>);
 //vytvoren ruznymi zpusoby dava stejny typ
 static_assert(std::is_same_v<MValueSlot, MValueSlot2>);
 

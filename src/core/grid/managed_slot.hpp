@@ -1,7 +1,7 @@
 #pragma once
 
-#include "types_util/types_util.hpp"
 #include "core/grid/managed_type.hpp"
+#include "core/grid/managed_value.hpp"
 
 namespace logicker::core::grid {
 
@@ -29,8 +29,15 @@ struct ManagedValueSlotFromName {
     using type = ManagedValueSlotImpl<name_, typename valueType_::valueType, typename valueType_::managementType>;
 };
 
-template<auto name_, typename keyType_, typename valueTypes_>
-struct ManagedMapSlotImpl;
+template<auto name_, typename keyType_, typename... valueTypes_>
+struct ManagedMapSlotImpl : ManagedSlot {
+  public:
+    static constexpr auto name = name_;
+    using keyType = keyType_;
+    using valueTypesTuple = std::tuple<valueTypes_...>;
+    using valueTypesSet = type::SetT<valueTypesTuple>;
+    using managedType = ManagedMapType<keyType_, valueTypes_...>;
+};
 
 template<auto name_, typename keyType_, typename... valueTypes_>
 struct ManagedMapSlotImpl<name_, keyType_, std::tuple<valueTypes_...>> : ManagedSlot {
@@ -42,6 +49,10 @@ struct ManagedMapSlotImpl<name_, keyType_, std::tuple<valueTypes_...>> : Managed
     using managedType = ManagedMapType<keyType_, valueTypes_...>;
 };
 
+//tahle sablona ma umoznovat namapovat mapId_ na libovolny mapType_ se stejnymi typy hodnot
+//(a taky to umoznuje, byt s nedokonalym assertem na valueTypesSety nize)
+//TODO: mela by existovat taky moznost definovat ManagedMapSlot pomoci mapId_ a managementType_,
+//ktera by zadany managementType_ aplikovala na vsechny valueIds
 template<typename mapId_, typename mapType_>
 struct ManagedMapSlotFromId {
   public:
@@ -67,6 +78,34 @@ struct ManagedMapSlotFromName {
     using type = ManagedMapSlotImpl<name_, keyType_, std::tuple<valueTypes_...>>;
 };
 
+template<auto name_, typename keyType_, typename... valueTypes_>
+struct ManagedMapSlotFromName<name_, keyType_, std::tuple<valueTypes_...>> {
+  public:
+    using type = typename ManagedMapSlotFromName<name_, keyType_, valueTypes_...>::type;
+};
+
+template<typename managedId, typename managementType>
+struct MakeSlot;
+
+template<auto name_, typename type_, typename managementType_>
+struct MakeSlot<ManagedValueId<name_, type_>, managementType_> {
+  public:
+    //using managementType = typename managementType_::template type<type_>;
+    //using managedValueType = ManagedValueType<type_, managementType>;
+    //using value = typename ManagedValueSlotFromName<name_, managedValueType>::type;
+    using value = typename ManagedValueSlotFromName<name_, ManagedValueType<type_, typename managementType_::template type<type_>>>::type;
+};
+
+template<auto name_, typename keyType_, typename... valueTypes_, typename managementType_>
+struct MakeSlot<ManagedMapId<name_, keyType_, valueTypes_...>, managementType_> {
+  public:
+    using managedValues = std::tuple<ManagedValue<valueTypes_, typename managementType_::template type<valueTypes_>>...>;
+    using value = typename ManagedMapSlotFromName<name_, keyType_, managedValues>::type;
+};
+
+template<typename managedId, typename managementType>
+using makeSlot_v = typename MakeSlot<managedId, managementType>::value;
+
 template<typename... managedSlots_>
 struct ManagedSlotsSet {
   public:
@@ -74,5 +113,20 @@ struct ManagedSlotsSet {
     using tuple = std::tuple<managedSlots_...>;
     using set = type::SetT<tuple>;
 };
+
+template<typename... managedSlots_>
+using ManagedSlotsSetFromSlots = ManagedSlotsSet<managedSlots_...>;
+
+template<typename managedIds, typename managementType>
+struct ManagedSlotsSetFromIdsImpl;
+
+template<typename... managedIds, typename managementType>
+struct ManagedSlotsSetFromIdsImpl<std::tuple<managedIds...>, managementType> {
+  public:
+    using type = ManagedSlotsSet<makeSlot_v<managedIds, managementType>...>;
+};
+
+template<typename managedIdsSet, typename managementType>
+using ManagedSlotsSetFromIds = typename ManagedSlotsSetFromIdsImpl<typename managedIdsSet::tuple, managementType>::type;
 
 }

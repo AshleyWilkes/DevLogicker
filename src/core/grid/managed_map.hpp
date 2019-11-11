@@ -16,20 +16,22 @@ class ManagedMapImpl<keyType_, std::tuple<valueTypes_...>> {
     using ValuesVariantType = std::variant<typename valueTypes_::managementType...>;
 
     template<typename valueType, typename... Args>
-    void add( const KeyType& key, Args&&... args );
+    void add( const KeyType& key, Args&&... args ) const;
 
     template<typename valueType>
-    const typename valueType::managementType& get( const KeyType& key );
+    const typename valueType::managementType& get( const KeyType& key ) const;
 
-    const ValuesVariantType get( const KeyType& key );
+    const ValuesVariantType get( const KeyType& key ) const;
+
+    const auto& getInstance() { return *this; } 
   private:
-    std::map<KeyType, ValuesVariantType> map_;
+    mutable std::map<KeyType, ValuesVariantType> map_;
 };
 
 template<typename keyType_, typename... valueTypes_>
 template<typename valueType, typename... Args>
 void
-ManagedMapImpl<keyType_, std::tuple<valueTypes_...>>::add( const KeyType& key, Args&&... args ) {
+ManagedMapImpl<keyType_, std::tuple<valueTypes_...>>::add( const KeyType& key, Args&&... args ) const {
   if ( map_.find( key ) != map_.end() ) throw std::logic_error{ "duplicate key" };
   typename valueType::managementType value{ std::forward<Args>( args )... };
   ValuesVariantType valueVariant = value;
@@ -39,13 +41,13 @@ ManagedMapImpl<keyType_, std::tuple<valueTypes_...>>::add( const KeyType& key, A
 template<typename keyType_, typename... valueTypes_>
 template<typename valueType>
 const typename valueType::managementType&
-ManagedMapImpl<keyType_, std::tuple<valueTypes_...>>::get( const KeyType& key ) {
+ManagedMapImpl<keyType_, std::tuple<valueTypes_...>>::get( const KeyType& key ) const {
   return std::get<typename valueType::managementType>( map_.at( key ) );
 }
 
 template<typename keyType_, typename... valueTypes_>
 const typename ManagedMapImpl<keyType_, std::tuple<valueTypes_...>>::ValuesVariantType
-ManagedMapImpl<keyType_, std::tuple<valueTypes_...>>::get( const KeyType& key ) {
+ManagedMapImpl<keyType_, std::tuple<valueTypes_...>>::get( const KeyType& key ) const {
   return map_.at( key );
 }
 
