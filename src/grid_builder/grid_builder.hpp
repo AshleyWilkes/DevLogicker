@@ -23,7 +23,7 @@ char givensStr[] = "givens";
 //v nasledujicim ???XXX??? ma popsat, ze prirazuju hodnotu kazdemu Centers fieldu, a to bud nactenou, ktera musi byt z jedne domainy, anebo kdyz neni co nacist, tak druhou domainu. Toto se zda ponekud complicated na to, aby si to nezaslouzilo rozbit na kousky!
 //v jadru je Operation, ktera cte hodnoty ze vstupu. Ta ma jako vystup mapu <Coords, Value>, muze se nejak jmenovat a muze mit nekolik implementaci ocekavajicich ruzny format vstupu (stream of Values vs stream of Coords, Value objects. (Soucasti vstupu by mohla byt i domaina pripustnych hodnot za ucelem odhaleni erroru pri parsovani!)
 //nad cteci operaci je futral, kterej ocheckuje, jestli nactena mapa obsahuje hodnoty pro vsechny coordsy,ktere existuji; pokud ne, pokusi se doplnit chybejici coordsy vhodnou domenou.
-//Cteci operace pracujici se streamem of Values muze byt udelana tak, ze prirazuje coorsum pouze hodnoty, ktere se ji povedlo rozparsovat, kdyz se parse nepovede, prislusna Coordsa zustane prazdna
+//Cteci operace pracujici se streamem of Values muze byt udelana tak, ze prirazuje coordsum pouze hodnoty, ktere se ji povedlo rozparsovat, kdyz se parse nepovede, prislusna Coordsa zustane prazdna
 //template<typename ValueT, char* inputFieldId = givensStr>
 //using CentersInitStep = InitStep<catalogue::mapping_id::Centers<ValueT>, ???XXX???, InputField<inputFieldId>, catalogue::mapping_id::Topology>;
 

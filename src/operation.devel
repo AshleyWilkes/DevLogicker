@@ -1,4 +1,4 @@
-akze u implementace predpokladame rozdeleni do dvou casti:
+takze u implementace predpokladame rozdeleni do dvou casti:
 vypocetni metoda samotna, zda se, ze se vyskytuje ve dvou formach:
 - hodnotova: vstupy jsou konkretni hodnoty, vystup je taky hodnota; pokud je tato operace relation-based,
   musi implementace specifikovat nejen, ke ktere relaci patri, ale i kterou z hodnot, jez relace
@@ -84,7 +84,7 @@ jiny pohled: rozdil mezi solverem a grid_builderem je zcela zasadni. faze, jak j
   ale znacna cast funkcionality ma byt implementovana pro kazdou operaci zvlast.
 
 Novejsi pohled:
-Ackoli jsou na prvni pohled relace a operace na jedne strane a solve a grid_builder na druhe strane
+Ackoli jsou na prvni pohled relace a operace na jedne strane a solver a grid_builder na druhe strane
 zdanlive sobe velmi podobne, ve skutecnosti se v nekterych ohledech dramaticky lisi.
 grid_builder pracuje s implementacemi operaci; ty vraceji primo spoctene hodnoty
 solver pracuje s implementacemi relaci; ty vraceji dedukce
@@ -107,7 +107,7 @@ Postup zpracovani InitStepu je tedy nasledujici:
         vratit ji, kdyz se to nepovede, vyhodi vyjimku. Tedy pro kazdou implementaci:
     b1) zjisit, jestli umim zkonvertit svoje argumenty na parametry, ktere chce implementace:
       argument uz ma spravny typ anebo
-      argument je typu int a jde na nem zavolat get<ocekavany typ>()
+      argument je typu input a jde na nem zavolat get<ocekavany typ>()
     b2) kdyz se povedlo udelat b1), tak vyvolat metodu a vratit jeji navratovou hodnotu
 3) zapsat vyslednou hodnotu do mappingu, ktery je uveden v InitStepu.
 
@@ -200,7 +200,7 @@ a) v InitStepu mam na vstupu input a potrebuju jej zkonvertit na konkretni typ T
     vyhodi vyjimku, pokud je konverze nepripustna; zde je treba proverit, jak presne mam API
     inputu formulovane, a prip. upravit.
 b) v ConstraintWrapu mam na vstupu ManagedValues a potrebuju jej zkonvertit bud na konkretni typ T
-    anebo na ValueSet<T>. Tedy ManagedValue ma mit v sobe checkovaci a konverni metodu; zde lehce
+    anebo na ValueSet<T>. Tedy ManagedValue ma mit v sobe checkovaci a konverzni metodu; zde lehce
     narazime na to, co je to ValueSet, kde je definovany a co o nem ManagedValue vi/ma vedet.
 
 ***Prakticke pouziti***

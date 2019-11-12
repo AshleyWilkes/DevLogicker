@@ -1,4 +1,5 @@
 #pragma once
+#include <tuple>
 
 namespace logicker::grid_builder {
 

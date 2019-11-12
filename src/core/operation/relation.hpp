@@ -59,7 +59,7 @@ class OperationImpl {
 //k promennym Operace staci pridat jednu dodatecnou promennou, predstavujici vysledek
 //Operace, a jednu bool promennou obsahujici informaci o tom, zda obsah te dodatecne
 //promenne odpovida spravne hodnote. (Nutnost posledne zminene bool promenne je velmi
-//zajimave tema. Vidim dva duvodu, proc ji zavadim: 1) hodnota teto promenne je,
+//zajimave tema. Vidim dva duvody, proc ji zavadim: 1) hodnota teto promenne je,
 //chapu-li Constraint jako Operationu, vysledkem teto Operationy, je to to, co v dusledku
 //probubla az nahoru a da celemu Constraintu pravdivostni hodnotu. 2) je to prostredek
 //k tomu, abych mohl do ostatnich promennych Relace dat zcela libovolny obsah, a zaroven
