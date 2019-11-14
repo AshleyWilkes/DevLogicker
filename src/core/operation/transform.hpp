@@ -3,8 +3,10 @@ brNAk
 brSIk
 cIpal
 mugil
-
 Cokor
+tuNAk
+losos
+
 Corek
 danie
 danio
@@ -32,7 +34,6 @@ lapal
 lenok
 lezec
 lipen
-losos
 mango
 molva
 moRan
@@ -65,7 +66,13 @@ Sprot
 Stika
 tetra
 tumAk
-tuNAk
 Uklej
 vobla
 zobec
+
+
+losos
+lotos
+
+ratel
+..X..

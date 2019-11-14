@@ -51,8 +51,35 @@ class ImplementationsRegistryBase {
     ImplementationsRegistryBase(const ImplementationsRegistryBase&) = delete;
     void operator=(const ImplementationsRegistryBase&) = delete;
 
+    //zde je tedy treba prochazet jednotlive Implementations
+    //  to lze udelat partialnimi specializacemi pro Impl, Impls...
+    //  lze to udelat partialni specializaci Impls, int
+    //  lze nemit perform metody staticky a v perform prochazet normalne v run-timu
+    //    instanci std::tuplu, v niz jsou jednotlive instance implementaci
     template<typename... Args>
-    static int perform( const Args&... );
+    static int perform( const Args&... args ) {
+      auto argsTuple = std::make_tuple<>( args... );
+      //return performImpl( argsTuple, std::make_index_sequence<std::tuple_size_v<decltype( impls_ )>>{} );
+      return performImpl( argsTuple, std::make_index_sequence<std::tuple_size_v<std::tuple<Implementations...>>>{} );
+    }
+  private:
+    //static inline std::tuple<Implementations...> impls_;
+    using Impls = std::tuple<Implementations...>;
+    
+    template<typename... Args, std::size_t fI, std::size_t... Is>
+    static int performImpl( std::tuple<Args...> args, std::index_sequence<fI, Is...> ) {
+      //pro implementaci s indexem fI se pokusim zkonvertit obdrzene parametry na pozadovane parametry
+      //Convertor<
+
+      if ( /*current implementations works*/ true ) {//konverze prosla, vracim vysledek z Implementation
+        return -1;//cuurent implementations' result
+      } else if constexpr ( sizeof...( Is ) ) {//konverze neprosla, jdu na dalsi Implementation
+        return performImpl( args, std::index_sequence<Is...>{} );
+      } else {//kdyz dosly Implementations, hazu std::domain_error
+        throw std::domain_error("");
+      }
+      return 1;
+    }
 };
 
 }
