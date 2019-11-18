@@ -1,4 +1,5 @@
 #pragma once
+#include "core/convertor.hpp"
 
 namespace logicker::core::implementations_registry {
 
@@ -8,12 +9,12 @@ namespace logicker::core::implementations_registry {
 //podstatne je, ze ma nejakej
 //using params_type
 //a metodu
-//static OutT perform(params_type)
+///*static*/ OutT perform(params_type)//rusim static, jelikoz staticke metody nejdou mockovat
 //
 //!!!!resp. ta metoda v predchozim radku muze vracet ValueSet<OutT>, neni vyreseno!!!!
 //to totiz neni treba pro InitStepy, takze udelejme napred tyto a zkusenejsi pristupme k reseni
 //Constraintu. Sounds good.
-//!!!!typ OutputT si musi urcit bud registry sama nebo template paramter jeji perform() metody!!!!
+//!!!!typ OutputT si musi urcit bud registry sama nebo template parameter jeji perform() metody!!!!
 //neni to vlastnost Operationy, jelikoz ValueSet<OutT> viz vyse
 //zakladni implementace podporuje jednoznacne (by registry) specifikovany OutT, usoudim-li pro potreby
 //  Constraint solvera, ze je uzitecne mit jeden objekt, podporujici vice OutT (pomoci templatovane)
@@ -31,8 +32,8 @@ namespace logicker::core::implementations_registry {
 //
 //registry musi pri kompilaci znat vsechny implementacni classy, ktere ma brat v potaz
 //
-//takze na jedny strane mame statickou compile-time definici templatovane tridy, jejiz singletom
-//predstavuje interface pro klienty
+//takze na jedny strane mame /*statickou*/ compile-time definici templatovane tridy, jejiz /*singleton*/
+//instance predstavuje interface pro klienty
 //a na druhy strane je vnitrek metody perform ty templatovany tridy, kterej dela ten vypocet
 //  tenhle vnitrek by nejspis mel mit precizneji definovana pravidla fungovani, coz by umoznilo
 //  dost mozna i relativne snadno navrhnout sirsi sadu testu
@@ -58,23 +59,20 @@ class ImplementationsRegistryBase {
     //    instanci std::tuplu, v niz jsou jednotlive instance implementaci
     template<typename... Args>
     static int perform( const Args&... args ) {
-      auto argsTuple = std::make_tuple<>( args... );
-      //return performImpl( argsTuple, std::make_index_sequence<std::tuple_size_v<decltype( impls_ )>>{} );
-      return performImpl( argsTuple, std::make_index_sequence<std::tuple_size_v<std::tuple<Implementations...>>>{} );
+      return performImpl<Implementations...>( args... );
     }
   private:
-    //static inline std::tuple<Implementations...> impls_;
-    using Impls = std::tuple<Implementations...>;
+    //using Impls = std::tuple<Implementations...>;
     
-    template<typename... Args, std::size_t fI, std::size_t... Is>
-    static int performImpl( std::tuple<Args...> args, std::index_sequence<fI, Is...> ) {
-      //pro implementaci s indexem fI se pokusim zkonvertit obdrzene parametry na pozadovane parametry
-      //Convertor<
+    template<typename fImpl, typename... Impls, typename... Args>
+    static int performImpl( Args... args ) {
+      //pro implementaci fImpl se pokusim zkonvertit obdrzene parametry na pozadovane parametry
+      convertor::Convertor<typename fImpl::InTs> conv( args... );
 
-      if ( /*current implementations works*/ true ) {//konverze prosla, vracim vysledek z Implementation
-        return -1;//cuurent implementations' result
-      } else if constexpr ( sizeof...( Is ) ) {//konverze neprosla, jdu na dalsi Implementation
-        return performImpl( args, std::index_sequence<Is...>{} );
+      if ( conv.is_success()) {//konverze prosla, vracim vysledek z Implementation
+        return fImpl::perform( conv.get() );
+      } else if constexpr ( sizeof...( Impls ) ) {//konverze neprosla, jdu na dalsi Implementation
+        return performImpl<Impls...>( args... );
       } else {//kdyz dosly Implementations, hazu std::domain_error
         throw std::domain_error("");
       }

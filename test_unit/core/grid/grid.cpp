@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "core/grid/grid.hpp"
+#include "core/grid/mock_grid.hpp"
 #include "core/grid/common.hpp"
 
 namespace {
@@ -70,6 +71,17 @@ TEST(Grid, SetAndGetWithMValueId) {
 TEST(Grid, UnknownMIdType) {
   Grid grid;
   //grid.get<unknownStr>();//this does not compile
+}
+
+TEST(MockGrid, DelegatesGet) {
+  //vytvorit InnerMock bez vnitrni tridy
+  MockGrid<> innerMockGrid;
+  //vytvorit OuterMock s InnerMockem jako vnitrni tridou
+  MockGrid<MockGrid<>> outerMockGrid{ innerMockGrid };
+  //setnout expectation na InnerMock.get()
+  EXPECT_CALL( innerMockGrid, mockedGet() );
+  //zavolat OuterMock.get()
+  outerMockGrid.get<MValueId>();
 }
 
 }

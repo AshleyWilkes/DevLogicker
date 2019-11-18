@@ -43,6 +43,27 @@ TEST(Convertor, OneArgFailure) {
   EXPECT_THROW( conv.get(), std::domain_error );
 }
 
+//Convertor<T, T> vraci stejnou hodnotu, i kdyz na ni nelze zavolat get<T>
+TEST(Convertor, OneArgTupleIdentity) {
+  Convertor<std::tuple<int>> conv( 34 );
+  EXPECT_EQ( conv.is_success(), true );
+  EXPECT_EQ( conv.get(), 34 );
+}
+
+//Convertor<A, B> vraci success, kdyz projde metoda get<A>
+TEST(Convertor, OneArgTupleSuccess) {
+  Convertor<std::tuple<int>> conv( input<int>{ 34 } );
+  EXPECT_EQ( conv.is_success(), true );
+  EXPECT_EQ( conv.get(), 34 );
+}
+
+//Convertor<A, B> vraci failure, kdyz neprojde metoda get<A>
+TEST(Convertor, OneArgTupleFailure) {
+  Convertor<std::tuple<int>> conv( input<bool>{ true } );
+  EXPECT_EQ( conv.is_success(), false );
+  EXPECT_THROW( conv.get(), std::domain_error );
+}
+
 //Convertor<A, B> je compile time error, pokud neexistuje B::get<A>()
 TEST(Convertor, OneArgCompileError) {
   //Convertor<int> conv( 3.14 );//this doesn't compile
@@ -65,6 +86,27 @@ TEST(Convertor, MultiArgFailureDueToConversion) {
 //Convertor<input<int>, input<bool> => int, bool, bool> je failure
 TEST(Convertor, MultiArgFailureDueToFormat) {
   Convertor<int, bool, bool> conv( input<int>{ 42 }, input<bool>{ true } );
+  EXPECT_EQ( conv.is_success(), false );
+  EXPECT_THROW( conv.get(), std::domain_error );
+}
+
+//Convertor<input<int>, input<bool> => int, bool> je success
+TEST(Convertor, MultiArgTupleSuccess) {
+  Convertor<std::tuple<int, bool>> conv( input<int>{ 42 }, input<bool>{ true } );
+  EXPECT_EQ( conv.is_success(), true );
+  EXPECT_EQ( conv.get(), std::make_tuple<>( 42, true ) );
+}
+
+//Convertor<input<int>, input<bool> => bool, int> je failure
+TEST(Convertor, MultiArgTupleFailureDueToConversion) {
+  Convertor<std::tuple<bool, int>> conv( input<int>{ 42 }, input<bool>{ true } );
+  EXPECT_EQ( conv.is_success(), false );
+  EXPECT_THROW( conv.get(), std::domain_error );
+}
+
+//Convertor<input<int>, input<bool> => int, bool, bool> je failure
+TEST(Convertor, MultiArTuplegFailureDueToFormat) {
+  Convertor<std::tuple<int, bool, bool>> conv( input<int>{ 42 }, input<bool>{ true } );
   EXPECT_EQ( conv.is_success(), false );
   EXPECT_THROW( conv.get(), std::domain_error );
 }

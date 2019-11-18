@@ -39,10 +39,21 @@ class Convertor {
     Required_ convert( const Actual_& arg ) {
       if constexpr ( std::is_same_v<Actual_, Required_> ) {
         return arg;
-      } else {
+      } else if constexpr ( std::is_class_v<Actual_> ) {//insufficient, for now good enough
         return arg.template get<Required_>();
+      } else {
+        throw std::invalid_argument( "" );
       }
     }
+};
+
+template<typename... Required>
+class Convertor<std::tuple<Required...>> : public Convertor<Required...> {
+  public:
+    Convertor() = delete;
+
+    template<typename... Actual>
+    Convertor( const Actual&... args ) : Convertor<Required...>( args... ) {}
 };
 
 template<typename Required>
@@ -53,10 +64,16 @@ class Convertor<Required> {
     template<typename Actual>
     Convertor( const Actual& arg ) {
       try {
-        value_ = arg.template get<Required>();
-        success_ = true;
+        if constexpr ( std::is_class_v<Actual> ) {
+          value_ = arg.template get<Required>();
+          success_ = true;
+        }
       } catch ( const std::invalid_argument& ) {}
     }
+
+    //more than 1 argument, i.e. failure
+    template<typename... Actual>
+    Convertor( const Actual&... args ) {}
 
     bool is_success() const { return success_; }
     Required get() const {

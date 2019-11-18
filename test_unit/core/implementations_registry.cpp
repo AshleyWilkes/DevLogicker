@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "core/implementations_registry.hpp"
+#include "core/mock_implementations_registry.hpp"
 
 namespace logicker::core::implementations_registry {
 
@@ -28,7 +29,7 @@ class Impl2 {
     using Implements = DummyOperation;
     using InTs = std::tuple<int, int>;
     using OutT = int;
-    static int perform( int /*a*/, int /*b*/ ) { return 3; }
+    static int perform( const std::tuple<int, int>& ) { return 3; }
 };
 
 //???neslo by to napsat nejak pomoci XXX<DummyOperation, int, Impl1Bool, Impl1Int, Impl2>
@@ -53,10 +54,19 @@ namespace {
 
 using namespace logicker::core::implementations_registry;
 
-TEST(ImplementationRegistry, Test) {
+TEST(ImplementationRegistry, TestImpl1Bool) {
   EXPECT_EQ( (ImplementationsRegistry<DummyOperation, int>::perform( true )), 1 );
+}
+
+TEST(ImplementationRegistry, TestImpl1Int) {
   EXPECT_EQ( (ImplementationsRegistry<DummyOperation, int>::perform( 1 )), 2 );
+}
+
+TEST(ImplementationRegistry, TestImpl2) {
   EXPECT_EQ( (ImplementationsRegistry<DummyOperation, int>::perform( 1, 1 )), 3 );
+}
+
+TEST(ImplementationRegistry, TestNoImpl) {
   EXPECT_THROW( (ImplementationsRegistry<DummyOperation, int>::perform( true, true )), std::domain_error );
 
 }
@@ -71,5 +81,16 @@ TEST(ImplementationRegistry, Test) {
 //b) pouzila druhou implementaci s 1 parametrem
 //c) pouzila implementaci s 2 parametry
 //d) nenasla zadnou pouzitelnou implementaci
+
+TEST(MockImplementationRegistry, DelegatesPerform) {
+  //vytvorit InnerRegistry bez vnitrni tridy
+  MockImplementationsRegistry<> innerMockRegistry;
+  //vytvorit OuterRegistry s InnerRegistry jako vnitrni tridou
+  MockImplementationsRegistry<MockImplementationsRegistry<>> outerMockRegistry{ innerMockRegistry };
+  //setnout epectation na InnerRegistry.perform()
+  EXPECT_CALL( innerMockRegistry, mockedPerform() );
+  //zavolat OuterRegistry.perform()
+  outerMockRegistry.perform<>();
+}
 
 }
