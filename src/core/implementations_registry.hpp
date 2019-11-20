@@ -58,21 +58,21 @@ class ImplementationsRegistryBase {
     //  lze nemit perform metody staticky a v perform prochazet normalne v run-timu
     //    instanci std::tuplu, v niz jsou jednotlive instance implementaci
     template<typename... Args>
-    /*static*/ int perform( const Args&... args ) const {
-      return performImpl<Implementations...>( args... );
+    int perform( const std::tuple<Args...>& args ) const {
+      return performImpl<Implementations...>( args );
     }
   private:
     //using Impls = std::tuple<Implementations...>;
     
-    template<typename fImpl, typename... Impls, typename... Args>
-    /*static*/ int performImpl( Args... args ) const {
+    template<typename fImpl, typename... Impls, typename Args>
+    int performImpl( Args args ) const {
       //pro implementaci fImpl se pokusim zkonvertit obdrzene parametry na pozadovane parametry
-      convertor::Convertor<typename fImpl::InTs> conv( args... );
+      convertor::Convertor<typename fImpl::InTs> conv( args );
 
       if ( conv.is_success()) {//konverze prosla, vracim vysledek z Implementation
         return fImpl{}.perform( conv.get() );
       } else if constexpr ( sizeof...( Impls ) ) {//konverze neprosla, jdu na dalsi Implementation
-        return performImpl<Impls...>( args... );
+        return performImpl<Impls...>( args );
       } else {//kdyz dosly Implementations, hazu std::domain_error
         throw std::domain_error("");
       }

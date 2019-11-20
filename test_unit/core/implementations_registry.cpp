@@ -13,7 +13,7 @@ class Impl1Bool {
     using Implements = DummyOperation;
     using InTs = std::tuple<bool>;
     using OutT = int;
-    /*static*/ int perform( bool /*b*/ ) const { return 1; }
+    /*static*/ int perform( const std::tuple<bool>& /*b*/ ) const { return 1; }
 };
 
 class Impl1Int {
@@ -21,7 +21,7 @@ class Impl1Int {
     using Implements = DummyOperation;
     using InTs = std::tuple<int>;
     using OutT = int;
-    /*static*/ int perform( int /*i*/ ) const { return 2; }
+    /*static*/ int perform( const std::tuple<int>& /*i*/ ) const { return 2; }
 };
 
 class Impl2 {
@@ -62,25 +62,20 @@ using namespace logicker::core::implementations_registry;
 
 using Operation = ImplementationsRegistry<DummyOperation, int>;
 
-TEST(ImplementationRegistry, TestImpl1Bool) {
-  EXPECT_EQ( Operation::get().perform( true ), 1 );
+TEST(ImplementationRegistry, TestImpl1BoolTuple) {
+  EXPECT_EQ( Operation::get().perform( std::make_tuple<>( true ) ), 1 );
 }
 
-/*TEST(ImplementationRegistry, TestImpl1BoolTuple) {
-  EXPECT_EQ( Operation::get().perform( std::make_tuple<>( true ) ), 1 );
-}*/
-
 TEST(ImplementationRegistry, TestImpl1Int) {
-  EXPECT_EQ( Operation::get().perform( 1 ), 2 );
+  EXPECT_EQ( Operation::get().perform( std::make_tuple<>( 1 ) ), 2 );
 }
 
 TEST(ImplementationRegistry, TestImpl2) {
-  EXPECT_EQ( Operation::get().perform( 1, 1 ), 3 );
+  EXPECT_EQ( Operation::get().perform( std::make_tuple<>( 1, 1 ) ), 3 );
 }
 
 TEST(ImplementationRegistry, TestNoImpl) {
-  EXPECT_THROW( Operation::get().perform( true, true ), std::domain_error );
-
+  EXPECT_THROW( Operation::get().perform( std::make_tuple<>( true, true ) ), std::domain_error );
 }
 
 //chci zaregistrovat ty 3 operations do registry

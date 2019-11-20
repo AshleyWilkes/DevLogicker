@@ -73,6 +73,32 @@ TEST(Grid, UnknownMIdType) {
   //grid.get<unknownStr>();//this does not compile
 }
 
+TEST(MockManagedValue, DelegatesGet) {
+  //vytvorit InnerManagedValue bez vnitrni tridy
+  MockManagedValue<> innerMockMValue;
+  //vytvorit OuterManagedValue s InnerManagedValue jako vnitrni tridou
+  MockManagedValue<MockManagedValue<>> outerMockMValue{ innerMockMValue };
+  //setnout expectation na InnerManagedValue.get()
+  EXPECT_CALL( innerMockMValue, mockedGet() );
+  //setnout expectation na OuterMValue.get(), aby se predeslo uninteresting call warningu
+  EXPECT_CALL( outerMockMValue, mockedGet() );
+  //zavolat OuterManagedValue.get()
+  outerMockMValue.get();
+}
+
+TEST(MockManagedValue, DelegatesSet) {
+  //vytvorit InnerManagedValue bez vnitrni tridy
+  MockManagedValue<> innerMockMValue;
+  //vytvorit OuterManagedValue s InnerManagedValue jako vnitrni tridou
+  MockManagedValue<MockManagedValue<>> outerMockMValue{ innerMockMValue };
+  //setnout expectation na InnerManagedValue.set()
+  EXPECT_CALL( innerMockMValue, mockedSet( 42 ) );
+  //setnout expectation na OuterMValue.set(), aby se predeslo uninteresting call warningu
+  EXPECT_CALL( outerMockMValue, mockedSet( 42 ) );
+  //zavolat OuterManagedValue.set()
+  outerMockMValue.set( 42 );
+}
+
 TEST(MockGrid, DelegatesGet) {
   //vytvorit InnerMock bez vnitrni tridy
   MockGrid<> innerMockGrid;

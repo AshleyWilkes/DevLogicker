@@ -64,9 +64,9 @@ using InputFieldId = InputField<inputFieldStr, int>;
 
 using TestInitStep = logicker::grid_builder::InitStep<
   MValueId,
-  InputFieldId,
   logicker::core::implementations_registry::DummyOperation,
-  MValueId
+  MValueId,
+  InputFieldId
 >;
 
 //ad registry. Chci, aby InitStep::perform pouzil mockImplementationsRegistry a ne normalni 
@@ -92,64 +92,15 @@ TEST(InitStep, CallsReadsOperationsAndOutputsTo) {
   MockInput<> input;
   using namespace logicker::core::implementations_registry;
   using ImplReg = ImplementationsRegistry<DummyOperation, int>;
-  EXPECT_CALL( grid, mockedGet() ).Times( 2 );
+
+  EXPECT_CALL( grid, mockedGet() ).Times( 4 );
+  EXPECT_CALL( grid.template get<MValueId>(), mockedGet() );
   EXPECT_CALL( input, mockedGet() );
+  EXPECT_CALL( input, mockedGetInput() );
   EXPECT_CALL( ImplReg::get(), mockedPerform() );
+  EXPECT_CALL( grid.template get<MValueId>(), mockedSet( 219 ) );
+
   TestInitStep::perform( grid, input );
 }
 
 }
-
-/*namespace {
-
-using namespace logicker::grid_builder;
-
-namespace grid = logicker::core::grid;
-
-char valueFromInputStr[] = "valueFormInput";
-using MValueFromInputId = ManagedValueId<valueFromInputStr, int>;
-
-char valueFromGridStr[] = "valueFromGrid";
-using MValueFromGridId = ManagedValueId<valueFromGridStr, int>;
-
-using Grid = Grid<DummyManagementType, MValueFromInputId, MValueFromGridId>;
-
-char inputNameStr[] = "input";
-
-using InitStepFromInput = InitStep<
-  MValueFromInputId,
-  DummyOperation,
-  InputField<inputNameStr>>;
-
-using InitStepFromGrid = InitStep<
-  MValueFromGridId,
-  DummyOperation,
-  MValueFromInputId>;
-
-TEST(InitStep, InitStepFromInput) {
-  Grid grid;
-  //vytvor input se vstupni hodnotou
-  InitStepFromInput::perform( grid, input );
-  //tady by to chtelo, aby DummyManagementType zde byl mock, kteryho se muzu zeptat, jestli
-  //  doslo k zavolani jeho metody setValue( 42 )
-  //  MValueFromInputId volani ma mit
-  //  MValueFromGridId volani nema mit
-}
-
-TEST(InitStep, InitStepFromGrid) {
-  Grid grid;
-  //nastav do promenne MValueFromInputId hodnotu
-  InitStepFromGrid::perform( grid );
-  //tady by to chtelo, aby DummyManagementType zde byl mock, kteryho se muzu zeptat, jestli
-  //  doslo k zavolani jeho metody setValue( 42 )
-  //  MValueFromInputId volani nema mit
-  //  MValueFromGridId volani ma mit
-}
-
-}
-
-//co chci testovat? OLD VERSION TO DELETE
-//chci pouzit nejaky dummy grid s dvema values typu int
-//chci pouzit nejakou dummy operation, asi identitu
-//chci overit, ze se hodnota z inputu ulozi do prvni value
-//chci overit, ze se hodnota z prvni value ulozi do druhe value*/

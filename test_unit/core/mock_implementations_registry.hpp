@@ -31,5 +31,5 @@ class MockImplementationsRegistry<void> {
     MOCK_CONST_METHOD0( mockedPerform, void() );
 
     template<typename... Args>
-    int perform( const Args&... ) const { mockedPerform(); return 0; }
+    int perform( const Args&... ) const { mockedPerform(); return 219; }
 };

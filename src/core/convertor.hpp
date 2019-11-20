@@ -11,69 +11,26 @@ namespace logicker::core::convertor {
 //
 //multi verze ma umet i neuspesnou konverzi v pripade nestejneho poctu
 //  poskytnutych a pozadovanych hodnot
+
 template<typename... Required>
-class Convertor {
+class Convertor;
+
+template<typename... Required_>
+class Convertor<std::tuple<Required_...>> {
   public:
+    using Required = std::tuple<Required_...>;
+
     Convertor() = delete;
 
     template<typename... Actual>
-    Convertor( const Actual&... args ) {
-      if constexpr ( sizeof...(Actual) == sizeof...(Required) ) {
+    Convertor( const std::tuple<Actual...>& args ) {
+      if constexpr ( sizeof...(Actual) == sizeof...(Required_) ) {
         try {
-          value_ = std::make_tuple<>( convert<Required>( args )... );
+          value_ = convert( args, std::make_index_sequence<sizeof...(Actual)>{} );
           success_ = true;
         } catch ( const std::invalid_argument& ) {}
       }
     }
-
-    bool is_success() const { return success_; }
-    std::tuple<Required...> get() const {
-      if ( success_ ) return value_;
-      throw std::domain_error( "" );
-    }
-  private:
-    bool success_{ false };
-    std::tuple<Required...> value_;
-
-    template<typename Required_, typename Actual_>
-    Required_ convert( const Actual_& arg ) {
-      if constexpr ( std::is_same_v<Actual_, Required_> ) {
-        return arg;
-      } else if constexpr ( std::is_class_v<Actual_> ) {//insufficient, for now good enough
-        return arg.template get<Required_>();
-      } else {
-        throw std::invalid_argument( "" );
-      }
-    }
-};
-
-template<typename... Required>
-class Convertor<std::tuple<Required...>> : public Convertor<Required...> {
-  public:
-    Convertor() = delete;
-
-    template<typename... Actual>
-    Convertor( const Actual&... args ) : Convertor<Required...>( args... ) {}
-};
-
-template<typename Required>
-class Convertor<Required> {
-  public:
-    Convertor( const Required& arg ) : success_{ true }, value_{ arg } {}
-
-    template<typename Actual>
-    Convertor( const Actual& arg ) {
-      try {
-        if constexpr ( std::is_class_v<Actual> ) {
-          value_ = arg.template get<Required>();
-          success_ = true;
-        }
-      } catch ( const std::invalid_argument& ) {}
-    }
-
-    //more than 1 argument, i.e. failure
-    template<typename... Actual>
-    Convertor( const Actual&... args ) {}
 
     bool is_success() const { return success_; }
     Required get() const {
@@ -83,6 +40,23 @@ class Convertor<Required> {
   private:
     bool success_{ false };
     Required value_;
+
+    template<typename... Actual, std::size_t... Is>
+    auto convert( const std::tuple<Actual...>& args, std::index_sequence<Is...> ) {
+      return std::make_tuple<>(
+          convert<typename std::tuple_element_t<Is, Required>>( std::get<Is>( args ) )... );
+    }
+
+    template<typename Req_, typename Act_>
+    Req_ convert( const Act_& arg ) {
+      if constexpr ( std::is_same_v<Act_, Req_> ) {
+        return arg;
+      } else if constexpr ( std::is_class_v<Act_> ) {//insufficient, for now good enough
+        return arg.template get<Req_>();
+      } else {
+        throw std::invalid_argument( "" );
+      }
+    }
 };
 
 }
