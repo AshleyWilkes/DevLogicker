@@ -10,6 +10,8 @@ TEST(MockInput, DelegatesGet) {
   MockInput<MockInput<>> outerMockInput{ innerMockInput };
   //setnout expectation na InnerInput.get()
   EXPECT_CALL( innerMockInput, mockedGet() );
+  //setnout expectation na OuterInput.get(), aby se predeslo uninteresting call warningu
+  EXPECT_CALL( outerMockInput, mockedGet() );
   //zavolat OuterInput.get()
   outerMockInput.get<int>( "" );
 }

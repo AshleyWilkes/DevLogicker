@@ -13,7 +13,7 @@ class Impl1Bool {
     using Implements = DummyOperation;
     using InTs = std::tuple<bool>;
     using OutT = int;
-    static int perform( bool /*b*/ ) { return 1; }
+    /*static*/ int perform( bool /*b*/ ) const { return 1; }
 };
 
 class Impl1Int {
@@ -21,7 +21,7 @@ class Impl1Int {
     using Implements = DummyOperation;
     using InTs = std::tuple<int>;
     using OutT = int;
-    static int perform( int /*i*/ ) { return 2; }
+    /*static*/ int perform( int /*i*/ ) const { return 2; }
 };
 
 class Impl2 {
@@ -29,7 +29,7 @@ class Impl2 {
     using Implements = DummyOperation;
     using InTs = std::tuple<int, int>;
     using OutT = int;
-    static int perform( const std::tuple<int, int>& ) { return 3; }
+    /*static*/ int perform( const std::tuple<int, int>& ) const { return 3; }
 };
 
 //???neslo by to napsat nejak pomoci XXX<DummyOperation, int, Impl1Bool, Impl1Int, Impl2>
@@ -45,8 +45,14 @@ class Impl2 {
 //pres vsech 5 parametru, takze ta alias templata nepujde napsat. Zatim necham takto, tj budu
 //implementace vyjmenovavat uvnitr definice classy v tuplu.
 template<>
-class ImplementationsRegistry<DummyOperation, int> :
-    public ImplementationsRegistryBase<Impl1Bool, Impl1Int, Impl2> {};
+class ImplementationsRegistry<DummyOperation, int> {
+  public:
+    using Type = ImplementationsRegistryBase<Impl1Bool, Impl1Int, Impl2>;
+    static const Type& get() {
+      static const Type& instance{};
+      return instance;
+    }
+};
 
 }
 
@@ -54,20 +60,26 @@ namespace {
 
 using namespace logicker::core::implementations_registry;
 
+using Operation = ImplementationsRegistry<DummyOperation, int>;
+
 TEST(ImplementationRegistry, TestImpl1Bool) {
-  EXPECT_EQ( (ImplementationsRegistry<DummyOperation, int>::perform( true )), 1 );
+  EXPECT_EQ( Operation::get().perform( true ), 1 );
 }
 
+/*TEST(ImplementationRegistry, TestImpl1BoolTuple) {
+  EXPECT_EQ( Operation::get().perform( std::make_tuple<>( true ) ), 1 );
+}*/
+
 TEST(ImplementationRegistry, TestImpl1Int) {
-  EXPECT_EQ( (ImplementationsRegistry<DummyOperation, int>::perform( 1 )), 2 );
+  EXPECT_EQ( Operation::get().perform( 1 ), 2 );
 }
 
 TEST(ImplementationRegistry, TestImpl2) {
-  EXPECT_EQ( (ImplementationsRegistry<DummyOperation, int>::perform( 1, 1 )), 3 );
+  EXPECT_EQ( Operation::get().perform( 1, 1 ), 3 );
 }
 
 TEST(ImplementationRegistry, TestNoImpl) {
-  EXPECT_THROW( (ImplementationsRegistry<DummyOperation, int>::perform( true, true )), std::domain_error );
+  EXPECT_THROW( Operation::get().perform( true, true ), std::domain_error );
 
 }
 
@@ -89,6 +101,8 @@ TEST(MockImplementationRegistry, DelegatesPerform) {
   MockImplementationsRegistry<MockImplementationsRegistry<>> outerMockRegistry{ innerMockRegistry };
   //setnout epectation na InnerRegistry.perform()
   EXPECT_CALL( innerMockRegistry, mockedPerform() );
+  //setnout epectation na OuterRegistry.perform(), aby se predeslo uninteresting call warningu
+  EXPECT_CALL( outerMockRegistry, mockedPerform() );
   //zavolat OuterRegistry.perform()
   outerMockRegistry.perform<>();
 }

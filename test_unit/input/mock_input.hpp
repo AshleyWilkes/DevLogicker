@@ -21,6 +21,6 @@ class MockInput<void> {
     MOCK_CONST_METHOD0( mockedGet, void() );
 
     template<typename T>
-    const T get( const std::string& name ) const
+    const T get( const std::string& ) const
     { mockedGet(); return T{}; }
 };

@@ -1,6 +1,10 @@
-/*#include "grid_builder/init_step.hpp"
+#include "gtest/gtest.h"
 #include "core/grid/grid.hpp"
-#include "core/grid/common.hpp"
+#include "core/grid/mock_grid.hpp"
+#include "core/implementations_registry.hpp"
+#include "core/mock_implementations_registry.hpp"
+#include "grid_builder/init_step.hpp"
+#include "input/mock_input.hpp"
 
 //co ma fungovat?
 //InitStep ma mit metodu perform(grid, input)
@@ -21,40 +25,80 @@
 //setnout expect call na cteni inputu, gridu, volani operation a zapis do gridu
 //zavolat InitStep::perform*/
 
-/*namespace logicker::core::implementations_registry {
+namespace logicker::core::implementations_registry {
 
 class DummyOperation{};
 
 template<>
-class ImplementationsRegistry<DummyOperation, int> :
-    public ImplementationsRegistryVase<> {};
+class ImplementationsRegistry<DummyOperation, int> {
+  public:
+    using Type = MockImplementationsRegistry<>;
+    static const Type& get() {
+      static const Type& instance{};
+      return instance;
+    }
+};
+
 }
 
 namespace {
 
+using namespace logicker::core::grid;
+
 char valueIdStr[] = "value";
 using MValueId = ManagedValueId<valueIdStr, int>;
 
-char inputFieldStr[] = "input";
-using InputFieldId = InputField<inputFieldStr>;
+//toto of course patri uplne nekam jinam
+//je trochu zajimava otazka, jestli primo do input v adresari input
+//anebo jestli by bylo lepsi udelat mezistupen; ten mezistupen by mohl zaroven
+//resit tu zalezitost se subinputem dedikovanym pro assignment/solution
+template<auto name_, typename type_>
+class InputField  {
+  public:
+    static constexpr auto name = name_;
+    using type = type_;
+};
 
-using TestInitStep = InitStep<
+char inputFieldStr[] = "input";
+using InputFieldId = InputField<inputFieldStr, int>;
+
+using TestInitStep = logicker::grid_builder::InitStep<
   MValueId,
   InputFieldId,
-  DummyOperation,
+  logicker::core::implementations_registry::DummyOperation,
   MValueId
 >;
 
-TEST(InitStep, CallsReadsOperationAndOutputsTo) {
+//ad registry. Chci, aby InitStep::perform pouzil mockImplementationsRegistry a ne normalni 
+//ImplementationsRegistry. To znamena, ze ten init step nemuze prohledavat globalni namespace
+//na templatovou promennou Operation, ale rather nejakou instanci nejakeho containera
+//na registry. Anebo by se muselo zaridit, aby init step v globalnim namespace nasel toho Mocka.
+//Pricemz ale Mock je obal na Registry, zatimco normalni implementace je normalni Registry.
+//Takze by se InitStep musel ptat na neco jinyho nez na ImplementationsRegistry<Operation>.
+//
+//Cili to cele smeruje k tomu, aby pri kompilaci vznikla singleton instance neceho jako 
+//collection of ImplementationRegistries, ktera by interne obsahovala SetT jednotlivych
+//registries a mela by metodu get<Operation, OutT>(), ktera by vracela instance techto registries
+//
+//Mno ale ta varianta se singleton instanci ma zasadni omezeni: neni zrejme, jak do ni "dynamicky"
+//(tj nejak auto-registracne) pridavat implementace snadno proste tim, ze implementaci napisu.
+//Tuto moznost naopak velmi snadno naplnuje stavajici varianta se specializacemi primarni
+//templaty. Toto omezeni je natolik zasadni, ze kvuli nemu opoustim (docasne?) opoustim moznost,
+//popsanou v predchozim odstavci, a vymyslel jsem, jak pouzit variantu se specializacemi
+//primarni templaty i pri testovani.
+
+TEST(InitStep, CallsReadsOperationsAndOutputsTo) {
   MockGrid<> grid;
   MockInput<> input;
-  EXPECT_CALL( grid, get() ).Times( 2 );
-  EXPECT_CALL( input, get() );
-  EXPECT_CALL( implRegistry, perform() );
+  using namespace logicker::core::implementations_registry;
+  using ImplReg = ImplementationsRegistry<DummyOperation, int>;
+  EXPECT_CALL( grid, mockedGet() ).Times( 2 );
+  EXPECT_CALL( input, mockedGet() );
+  EXPECT_CALL( ImplReg::get(), mockedPerform() );
   TestInitStep::perform( grid, input );
 }
 
-}*/
+}
 
 /*namespace {
 

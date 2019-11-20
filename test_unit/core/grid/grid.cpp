@@ -80,6 +80,8 @@ TEST(MockGrid, DelegatesGet) {
   MockGrid<MockGrid<>> outerMockGrid{ innerMockGrid };
   //setnout expectation na InnerMock.get()
   EXPECT_CALL( innerMockGrid, mockedGet() );
+  //setnout expectation na OuterMock.get(), aby se predeslo uninteresting call warningu
+  EXPECT_CALL( outerMockGrid, mockedGet() );
   //zavolat OuterMock.get()
   outerMockGrid.get<MValueId>();
 }

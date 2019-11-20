@@ -16,10 +16,10 @@ class MockImplementationsRegistry {
   public:
     MockImplementationsRegistry( RealRegistry& registry ) : registry_{ registry } {}
 
-    MOCK_METHOD0( mockedPerform, void() );
+    MOCK_CONST_METHOD0( mockedPerform, void() );
 
     template<typename... Args>
-    int perform( const Args&... args )
+    int perform( const Args&... args ) const
     { mockedPerform(); return registry_.template perform<Args...>( args... ); }
   private:
     RealRegistry& registry_;
@@ -28,8 +28,8 @@ class MockImplementationsRegistry {
 template<>
 class MockImplementationsRegistry<void> {
   public:
-    MOCK_METHOD0( mockedPerform, void() );
+    MOCK_CONST_METHOD0( mockedPerform, void() );
 
     template<typename... Args>
-    int perform( const Args&... ) { mockedPerform(); return 0; }
+    int perform( const Args&... ) const { mockedPerform(); return 0; }
 };

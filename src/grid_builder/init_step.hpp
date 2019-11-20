@@ -14,6 +14,13 @@ class InitStep {
     using Requires = std::tuple<OutputsTo, Reads>;
 
     using OperationId = OperationId_;
+
+    template<typename Grid, typename Input>
+    static void perform( Grid& grid, const Input& input ) {
+      //extractnout veci z Reads
+      //zavolat OperationId, OutT
+      //vysledek ulozit do OutputsTo
+    }
 };
 
 }
