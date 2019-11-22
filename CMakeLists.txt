@@ -20,7 +20,6 @@ target_link_libraries(run_unit_tests PRIVATE gmock_main)
 target_link_libraries(run_unit_tests PRIVATE pthread)
 target_link_libraries(run_unit_tests PRIVATE jsoncpp)
 
-target_sources(run_unit_tests PRIVATE test_unit/catalogue/mapping_type/read_only_mapping.cpp)
 target_sources(run_unit_tests PRIVATE test_unit/core/grid/managed_id.cpp)
 target_sources(run_unit_tests PRIVATE test_unit/core/grid/managed_type.cpp)
 target_sources(run_unit_tests PRIVATE test_unit/core/grid/managed_slot.cpp)

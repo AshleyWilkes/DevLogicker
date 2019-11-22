@@ -1,0 +1,25 @@
+inu diskutujme o vlastnostech management typu
+tj. o tom, jak se ruzne workery chovaji k jednotlive hodnote nejakeho daneho typu
+
+checkeru staci mit proste vnitrni promennou, ktera je const a setovana pri konstrukci
+
+solver muze mit ruzne situace, jedna typicka je, ze solver zna svou konecnou domenu a
+vyskrtava z ni mozne hodnoty
+
+jina typicka situace solveru je, ze domena je nekonecna, lze ji prochazet (iterovat)
+
+lze si predstavit i situaci, kdy zkratka nevim vubec nic krome typu a musim si pamatovat
+jednotlive dedukce a cekat na MustContain dedukci
+
+displayer mozna potrebuje jeste jiny pristup
+
+zkusme rozpracovat pojem domeny. ??vsechno nasvedcuje tomu, ze domena bude compile-time
+  koncept??
+
+domena ma vlastnosti:
+- iterovatelnost: to maji mit vsechny domeny; umoznuje prochazet pripustne hodnoty po jedne,
+      bez opakovani
+- konecnost: konecna domena zarucuje, ze kdyz pres ni iterujes, dojdes na konec; z toho vyplyva,
+      ze lze konvertit hodnoty z domeny na indexy pole a naopak
+- vylucnost: umi rozhodnout, jestli hodnota underlining typu do domeny patri cili nic
+- instancializovatelnost: umi vytvorit instanci hodnoty ze stringu (tj. rozparsovat vstup)

@@ -10,14 +10,14 @@ char givensStr[] = "givens";
 
 //jednoduche InitStepy maji 3 kroky:
 //1) precti vstupy (z inputu nebo gridu, vzdy konstanty)
-//2) zavolej nejakou metody s nactenymi vstupy
+//2) zavolej nejakou metodu s nactenymi vstupy
 //3) vysledek metody zapis do dane konstanty v gridu
 //
 //ten slozitej InitStep ma taky 3 kroky:
 //1) nacti (cte input i grid)
 //2) zavolej metodu (ta metoda ale zalezi na formatu vstupu z input)
 //3) zapis (to je stejne jako u jednoducheho stepu, akorat mam mapujici nikoli konstantni mapping,
-//    coz by ale nemel byt vubec zadny rozdil
+//    coz by ale nemel byt vubec zadny rozdil)
 
 
 //v nasledujicim ???XXX??? ma popsat, ze prirazuju hodnotu kazdemu Centers fieldu, a to bud nactenou, ktera musi byt z jedne domainy, anebo kdyz neni co nacist, tak druhou domainu. Toto se zda ponekud complicated na to, aby si to nezaslouzilo rozbit na kousky!

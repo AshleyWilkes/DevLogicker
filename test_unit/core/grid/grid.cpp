@@ -41,9 +41,18 @@ using Grid2 = Grid<DummyManagementType, MValuesIds>;
 //grid type jde vytvorit ze zadaneho MSlotsSetu
 using Grid3 = Grid<MSlotsSet>;
 
-static_assert(grid::is_same_v<Grid1, Grid2>);
-static_assert(grid::is_same_v<Grid1, Grid3>);
-static_assert(grid::is_same_v<Grid2, Grid3>);
+static_assert(grid::is_same_grid_v<Grid1, Grid2>);
+static_assert(grid::is_same_grid_v<Grid1, Grid3>);
+static_assert(grid::is_same_grid_v<Grid2, Grid3>);
+
+using Grid4 = Grid<DummyManagementType, MValueId>;
+
+//grid typy lze porovnavat na inkluzi -- zde management type nehraje zadnou roli;
+//jinymi slovy na urovni typu jsou vsechny management typy vzajemne porovnavatelne,
+//napr. proto, ze mohou byt setnute na stejnou hodnotu
+static_assert(grid::is_subgrid_v<Grid1, Grid2>);
+static_assert(grid::is_subgrid_v<Grid4, Grid1>);
+static_assert(! grid::is_subgrid_v<Grid1, Grid4>);
 
 using Grid = Grid1;
 
@@ -72,6 +81,20 @@ TEST(Grid, UnknownMIdType) {
   Grid grid;
   //grid.get<unknownStr>();//this does not compile
 }
+
+//!!!!!JE ZDE PROBLEM!!!!!
+//aby davalo smysl testovat inkluzi mezi gridy, je treba mit k dispozici slozitejsi
+//ManagementType, nez je stavajici verze Dummyho: ten totiz umoznuje max jednu hodnotu
+//
+//instance gridu lze porovnavat na inkluzi (pomoci operator<=):
+//grid1 je subgridem gridu2, prave kdyz
+//- typ gridu1 je subtypem gridu2
+//- pro kazdy MId instance MValue v gridu1 je podmnozinou instance MValue v gridu2
+//
+//test, ze grid1 <= grid2 nekompiluje, kdyz Grid1 neni subgrid Gridu2
+//test s Gridem s 1 MValueId, 2 ruzne instance, porovnani na obe strany (jeden succ a jeden fail) 
+//test s Gridem s 1 MMapId, 2 ruzne instance, porovnani na obe strany (jeden succ a jeden fail)
+//test s relativne slozitym Gridem, 2 ruzne instance, porovnani na obe strany (1 succ a 1 fail)
 
 TEST(MockManagedValue, DelegatesGet) {
   //vytvorit InnerManagedValue bez vnitrni tridy

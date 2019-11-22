@@ -37,4 +37,22 @@ TEST(ManagedMap, SetAndGetFailure) {
   //mMap.get<MValueTypeF>( 1.2 );//this doesn't compile
 }
 
+//lze porovnavat na inkluzi (operator <=):
+//tj. existuje sablona
+//template<typename MMap1, typename MMap2>
+//bool operator<=( const MMap1&, const MMap2& );
+//
+//plati map1 <= map2, prave kdyz:
+//- pro kazdej key z map1 plati
+//  - tento key je pritomen i map2
+//  - pod timto klicem je ve Variantu MValue stejnyho datovyho typu
+//  - MValue v map1 <= MValue v map2
+
+//testovat:
+//- success nad dvema stejnyma mapama
+//- success nad dvema nestejnyma mapama
+//- fail, kdyz nejaky klic neni v map2 pritomen
+//- fail, kdyz je pritomna jina varianta
+//- fail, kdyz pritomna varianta neni vetsi ne ta v map1
+
 }

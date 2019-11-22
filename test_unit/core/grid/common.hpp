@@ -21,15 +21,4 @@ class DummyManagementType {
     using type = Impl<valueT>;
 };
 
-/*template<typename valueT>
-class DummyManagementType {
-  public:
-    DummyManagementType() = default;
-    explicit DummyManagementType( const valueT& value ) : value_{ value } {}
-    valueT get() const { return value_; }
-    void set( const valueT& value ) { value_ = value; }
-  private:
-    valueT value_;
-};*/
-
 }

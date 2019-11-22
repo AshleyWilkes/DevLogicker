@@ -46,4 +46,51 @@ static_assert(
 //umi vratit sve Ids jako Set
 static_assert(type::is_same_set<typename MIdsSet::set, type::makeSetT<MValueId, MMapIdIDF>>);
 
+char valueStr2[] = "value";
+using MValueId2 = ManagedValueId<valueStr2, int>;
+
+char valueABCStr[] = "valueABC";
+using MValueId3 = ManagedValueId<valueABCStr, int>;
+
+using MValueId4 = ManagedValueId<valueStr, float>;
+
+//test, ze MValueId je svym subId
+static_assert(is_sub_MId_v<MValueId, MValueId>);
+//test, ze MValueId je subId jineho MValueId se stejnym jmenem a stejnou hodnotou
+static_assert(is_sub_MId_v<MValueId, MValueId2>);
+//test, ze MValueId neni subId jineho MValueId (jine jmeno)
+//static_assert(! is_sub_MId_v<MValueId, MValueId3>);//ted neni podstatne
+//test, ze MValueId neni subId jineho MValueId (jina hodnota)
+static_assert(! is_sub_MId_v<MValueId, MValueId4>);
+
+char mapStr2[] = "map";
+using MMapIdIDF2 = ManagedMapId<mapStr2, int, double, float>;
+
+using MMapIdIBDF = ManagedMapId<mapStr, int, bool, double, float>;
+
+char mapABCStr[] = "mapABC";
+using MMapIdIDF3 = ManagedMapId<mapABCStr, int, double, float>;
+
+using MMapIdFDF = ManagedMapId<mapStr, float, double, float>;
+
+using MMapIdID = ManagedMapId<mapStr, int, double>;
+
+//test, ze MMapId je svym subId
+static_assert(is_sub_MId_v<MMapIdIDF, MMapIdIDF>);
+//test, ze MMapId je subId jineho MMapId se stejnym obsahem
+static_assert(is_sub_MId_v<MMapIdIDF, MMapIdIDF2>);
+//test, ze MMapId je subId jineho MMapId se stejnym jmenem, klicem a nadmnozinou valueTypes
+static_assert(is_sub_MId_v<MMapIdIDF, MMapIdIBDF>);
+//test, ze MMapId neni subId jineho MMapId (jine jmeno, jinak stejne)
+//static_assert(! is_sub_MId_v<MMapIdIDF, MMapIdIDF3>);//ted neni podstatne
+//test, ze MMapId neni subId jineho MMapId (jiny klic, jinak stejne)
+static_assert(! is_sub_MId_v<MMapIdIDF, MMapIdFDF>);
+//test, ze MMapId neni subId jineho MMapId (podmnozina valueTypes, jinak stejne)
+static_assert(! is_sub_MId_v<MMapIdIDF, MMapIdID>);
+
+//test, ze MValueId neni subId MMapId
+static_assert(! is_sub_MId_v<MValueId, MMapIdIDF>);
+//test, ze MMapId neni subId MValueId
+static_assert(! is_sub_MId_v<MMapIdIDF, MValueId>);
+
 }

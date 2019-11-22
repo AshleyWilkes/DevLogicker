@@ -43,12 +43,14 @@ template<auto name_, typename valueType_, typename managementType_>
 struct SlotInstance<ManagedValueSlotImpl<name_, valueType_, managementType_>> {
   public:
     using type = ManagedValue<valueType_, managementType_>;
+    using Id = ManagedValueId<name_, valueType_>;
 };
 
 template<auto name_, typename keyType_, typename... valueTypes_>
 struct SlotInstance<ManagedMapSlotImpl<name_, keyType_, std::tuple<valueTypes_...>>> {
   public:
     using type = ManagedMapImpl<keyType_, std::tuple<valueTypes_...>>;
+    using Id = ManagedMapId<name_, keyType_, valueTypes_...>;
 };
 
 template<typename MSlot>
@@ -87,16 +89,12 @@ class GridImpl<std::tuple<MSlot...>> {
     Instances instances_ = boost::hana::make_map(MSlotPair<MSlot>...);
   public:
     using MSlotsSet = type::SetT<std::tuple<MSlot...>>;
+    using MIdsTuple = std::tuple<typename SlotInstance<MSlot>::Id...>;
 
     template<typename MId>
     auto& get() {
       return instances_[boost::hana::type_c<MId>].getInstance();
     }
-
-    /*template<auto name>
-    auto get() {
-      return nullptr;
-    }*/
 };
 
 //jde vytvorit z vyjmenovanych MValueIds a zadaneho ManagementTypu
@@ -136,7 +134,43 @@ using Grid = typename GridHelper<Args...>::type;
 //      napsat i do S2". Toto subslotovani vyzaduje specializovat na konkretni typy ManagementTypu,
 //      takze vlastne neni jasne, kam patri jeho implementace...
 template<typename G1, typename G2>
-inline constexpr bool is_same_v = type::is_same_set<typename G1::MSlotsSet, typename G2::MSlotsSet>;
+inline constexpr bool is_same_grid_v = type::is_same_set<typename G1::MSlotsSet, typename G2::MSlotsSet>;
+
+template<typename MId, typename MIdsTuple>
+class HasSuperMIdIn;
+
+//  true, kdyz MId je subMId nejakeho MId z G2
+//  false jinak
+//tj. prochazet MIds2 a zorovat vysledky operace, ktera pro MId a MId2 vrati
+//  true, kdyz MId je subMId MId2
+//  false jinak
+template<typename MId, typename... MIds2>
+class HasSuperMIdIn<MId, std::tuple<MIds2...>> {
+  public:
+    static inline constexpr bool value = ( ... || is_sub_MId_v<MId, MIds2> );
+};
+
+template<typename G1, typename G2>
+class IsSubgrid;
+
+//grid G1 je subgridem G2, kdyz kazdy jeho MId ma v G2 supergrid:
+//MValueId musi byt pritomno v G2 ve stejne forme
+//MMapId musi byt v G2 ve forme, ktera pripousti stejne veci (muze jich pripoustet vic); toto nabizi
+//  ruzne moznosti s ohledem na domeny, volim asi moznost domeny ignorovat a pozadovat v G2 stejne
+//  datove typy v G2
+//bylo by asi vhodne delegovat rozhodovani o jednotlivem MId na prislusne implementace teto
+//  promenne pro MValueId a MMapId v managed_id.hpp
+//cili zde chci prochazet MIds z G1 a zandovat vysledky operace, ktera pro dane MId z G1 vrati
+//  true, kdyz MId je subMId nejakeho MId z G2
+//  false jinak
+template<typename... MIds1, typename... MIds2>
+class IsSubgrid<std::tuple<MIds1...>, std::tuple<MIds2...>> {
+  public:
+    static inline constexpr bool value = ( ... && HasSuperMIdIn<MIds1, std::tuple<MIds2...>>::value );
+};
+
+template<typename G1, typename G2>
+inline constexpr bool is_subgrid_v = IsSubgrid<typename G1::MIdsTuple, typename G2::MIdsTuple>::value;
 
 /*template<template<typename...> typename MappingType, typename GridType>
 class Grid {
