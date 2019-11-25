@@ -1,4 +1,9 @@
 #pragma once
+#include <bitset>
+#include <optional>
+
+namespace logicker::core::grid {
+}
 
 namespace {
 

@@ -71,9 +71,9 @@ TEST(Grid, SetAndGetWithMValueId) {
   grid.get<MValueId>().set( 42 );
   EXPECT_EQ( grid.get<MValueId>().get(), 42 );
   grid.get<MMapIdBIF>().add<MValueTypeI>( true, 24 );
-  EXPECT_EQ( grid.get<MMapIdBIF>().get<MValueTypeI>( true ).get(), 24 );
+  EXPECT_EQ( grid.get<MMapIdBIF>().get<ManagedValue<MValueTypeI>>( true ).getInstance().get(), 24 );
   grid.get<MMapIdBIF>().add<MValueTypeF>( false, 21.0 );
-  EXPECT_EQ( grid.get<MMapIdBIF>().get<MValueTypeF>( false ).get(), 21.0 );
+  EXPECT_EQ( grid.get<MMapIdBIF>().get<ManagedValue<MValueTypeF>>( false ).getInstance().get(), 21.0 );
 }
 
 //fetch na v ManagedSlotsSet... neobsazeny typ je compile-time error
@@ -82,10 +82,6 @@ TEST(Grid, UnknownMIdType) {
   //grid.get<unknownStr>();//this does not compile
 }
 
-//!!!!!JE ZDE PROBLEM!!!!!
-//aby davalo smysl testovat inkluzi mezi gridy, je treba mit k dispozici slozitejsi
-//ManagementType, nez je stavajici verze Dummyho: ten totiz umoznuje max jednu hodnotu
-//
 //instance gridu lze porovnavat na inkluzi (pomoci operator<=):
 //grid1 je subgridem gridu2, prave kdyz
 //- typ gridu1 je subtypem gridu2
