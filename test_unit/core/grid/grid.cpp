@@ -88,7 +88,17 @@ TEST(Grid, UnknownMIdType) {
 //- pro kazdy MId instance MValue v gridu1 je podmnozinou instance MValue v gridu2
 //
 //test, ze grid1 <= grid2 nekompiluje, kdyz Grid1 neni subgrid Gridu2
+TEST(Grid, OperatorLEDoesntCompileForIncompatibleGrids) {
+  /*using SmallGrid = Grid<DummyManagementType, MValueId>;
+  using LargeGrid = Grid<DummyManagementType, MValueId, MMapIdBIF>;
+  SmallGrid small;
+  LargeGrid large;
+  large <= small;//this shouldn't compile*/
+}
+
 //test s Gridem s 1 MValueId, 2 ruzne instance, porovnani na obe strany (jeden succ a jeden fail) 
+TEST(Grid, OperatorLEWorksWith2InstancesOf1Grid) {
+}
 //test s Gridem s 1 MMapId, 2 ruzne instance, porovnani na obe strany (jeden succ a jeden fail)
 //test s relativne slozitym Gridem, 2 ruzne instance, porovnani na obe strany (1 succ a 1 fail)
 

@@ -2,8 +2,11 @@
 #include "core/grid/managed_id.hpp"
 #include "core/grid/managed_slot.hpp"
 #include "core/grid/common.hpp"
+//#include "core/mock_management_type.hpp"
 
 namespace {
+
+using namespace logicker::core::grid;
 
 namespace type = logicker::type;
 

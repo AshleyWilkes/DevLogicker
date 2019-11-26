@@ -4,6 +4,8 @@
 
 namespace {
 
+using namespace logicker::core::grid;
+
 namespace type = logicker::type;
 
 char valueStr[] = "value";

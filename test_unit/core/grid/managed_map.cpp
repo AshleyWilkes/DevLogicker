@@ -2,15 +2,11 @@
 #include "core/grid/managed_type.hpp"
 #include "core/grid/managed_map.hpp"
 #include "core/mock_management_type.hpp"
-//#include "core/grid/common.hpp"
 
 namespace {
 
 using namespace logicker::core::grid;
 
-//using MValueTypeI = ManagedValueType<int, typename DummyManagementType::type<int>>;
-//using MValueTypeB = ManagedValueType<bool, typename DummyManagementType::type<bool>>;
-//using MValueTypeF = ManagedValueType<float, typename DummyManagementType::type<float>>;
 using MValueTypeI = ManagedValueType<int, MockRangeManagementType<4, int>>;
 using MValueTypeB = ManagedValueType<bool, MockReadOnlyManagementType<bool>>;
 using MValueTypeF = ManagedValueType<float, MockRangeManagementType<5, float>>;
