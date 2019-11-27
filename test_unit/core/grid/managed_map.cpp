@@ -19,9 +19,11 @@ using MMap = ManagedMap<MMapType>;
 TEST(ManagedMap, SetAndGetSuccess) {
   //jde vytvorit, addnout hodnotu, getnout ji
   MMap mMap;
-  mMap.add<MValueTypeI>( true, 42 );
-  mMap.add<MValueTypeB>( false, false );
+  mMap.add<MValueTypeI>( true );
+  mMap.add<MValueTypeB>( false );
+  mMap.get<MValueTypeI>( true ).getInstance().init( 42 );
   mMap.get<MValueTypeI>( true ).getInstance().set( 42 );
+  mMap.get<MValueTypeB>( false ).getInstance().init( false );
   EXPECT_EQ( mMap.get<MValueTypeI>( true ).getInstance().get(), 42);
   EXPECT_EQ( mMap.get<MValueTypeB>( false ).getInstance().get(), false );
   const auto& trueValVariant = mMap.get( true );
@@ -31,9 +33,10 @@ TEST(ManagedMap, SetAndGetSuccess) {
 TEST(ManagedMap, SetAndGetFailure) {
   MMap mMap;
   //invalid add je compile-time error nebo warning
-  mMap.add<MValueTypeI>( true, 42.0 );
+  mMap.add<MValueTypeI>( true );
+  mMap.get<MValueTypeI>( true ).getInstance().init( 42.0 );
   //opakovanej add se stejnym klicem je run-time error
-  EXPECT_THROW( mMap.add<MValueTypeI>( true, 42 ), std::logic_error );
+  EXPECT_THROW( mMap.add<MValueTypeI>( true ), std::logic_error );
   //fetch na nevlozenou hodnotu je run-time exception
   EXPECT_THROW( mMap.get<MValueTypeI>( false ).getInstance().get(), std::out_of_range );
   //fetch na v ManagedValueType... neobsazeny typ je compile-time error
@@ -44,12 +47,16 @@ TEST(ManagedMap, SetAndGetFailure) {
 //- nad dvema stejnyma mapama
 TEST(ManagedMap, OperatorLEWorksForSameMaps) {
   MMap mMap1, mMap2;
-  mMap1.add<MValueTypeI>( true, 42 );
-  mMap2.add<MValueTypeI>( true, 42 );
+  mMap1.add<MValueTypeI>( true );
+  mMap2.add<MValueTypeI>( true );
+  mMap1.get<MValueTypeI>( true ).getInstance().init( 42 );
+  mMap2.get<MValueTypeI>( true ).getInstance().init( 42 );
   EXPECT_LE( mMap1, mMap2 );
   EXPECT_LE( mMap2, mMap1 );
-  mMap1.add<MValueTypeB>( false, false );
-  mMap2.add<MValueTypeB>( false, false );
+  mMap1.add<MValueTypeB>( false );
+  mMap2.add<MValueTypeB>( false );
+  mMap1.get<MValueTypeB>( false ).getInstance().init( false );
+  mMap2.get<MValueTypeB>( false ).getInstance().init( false );
   EXPECT_LE( mMap1, mMap2 );
   EXPECT_LE( mMap2, mMap1 );
   mMap1.get<MValueTypeI>( true ).getInstance().set( 44 );
@@ -61,8 +68,10 @@ TEST(ManagedMap, OperatorLEWorksForSameMaps) {
 //- jedna mapa ma eliminovanejsi moznosti
 TEST(ManagedMap, OperatorLEWorksForDifferentMaps) {
   MMap mMap1, mMap2;
-  mMap1.add<MValueTypeI>( true, 42 );
-  mMap2.add<MValueTypeI>( true, 42 );
+  mMap1.add<MValueTypeI>( true );
+  mMap2.add<MValueTypeI>( true );
+  mMap1.get<MValueTypeI>( true ).getInstance().init( 42 );
+  mMap2.get<MValueTypeI>( true ).getInstance().init( 42 );
   mMap1.get<MValueTypeI>( true ).getInstance().set( 44 );
   EXPECT_LE( mMap1, mMap2 );
   EXPECT_FALSE( mMap2 <= mMap1 );
@@ -71,9 +80,12 @@ TEST(ManagedMap, OperatorLEWorksForDifferentMaps) {
 //- kdyz nejaky klic neni v jedne mape pritomen
 TEST(ManagedMap, OperatorLEWorksWithMissingKeyInMap2) {
   MMap mMap1, mMap2;
-  mMap1.add<MValueTypeI>( true, 42 );
-  mMap2.add<MValueTypeI>( true, 42 );
-  mMap2.add<MValueTypeB>( false, true );
+  mMap1.add<MValueTypeI>( true );
+  mMap2.add<MValueTypeI>( true );
+  mMap1.get<MValueTypeI>( true ).getInstance().init( 42 );
+  mMap2.get<MValueTypeI>( true ).getInstance().init( 42 );
+  mMap2.add<MValueTypeB>( false );
+  mMap2.get<MValueTypeB>( false ).getInstance().init( true );
   EXPECT_LE( mMap1, mMap2 );
   EXPECT_FALSE( mMap2 <= mMap1 );
 }
@@ -81,8 +93,10 @@ TEST(ManagedMap, OperatorLEWorksWithMissingKeyInMap2) {
 //- kdyz mapy obsahuji pod stejnym klicem ruzne Varianty
 TEST(ManagedMap, OperatorLEWorksWithDifferentVariantsUnderSameKey) {
   MMap mMap1, mMap2;
-  mMap1.add<MValueTypeI>( true, 42 );
-  mMap2.add<MValueTypeB>( true, false );
+  mMap1.add<MValueTypeI>( true );
+  mMap1.get<MValueTypeI>( true ).getInstance().init( 42 );
+  mMap2.add<MValueTypeB>( true );
+  mMap2.get<MValueTypeB>( true ).getInstance().init( false );
   EXPECT_FALSE( mMap1 <= mMap2 );
   EXPECT_FALSE( mMap2 <= mMap1 );
 }
@@ -90,10 +104,12 @@ TEST(ManagedMap, OperatorLEWorksWithDifferentVariantsUnderSameKey) {
 //- kdyz mapy obsahuji neporovnatelne Varianty
 TEST(ManagedMap, OperatorLEWorksWithIncomparableVariants) {
   MMap mMap1, mMap2;
-  mMap1.add<MValueTypeI>( true, 42 );
-  mMap1.get<MValueTypeI>( true ).getInstance().erase ( 42 );
-  mMap2.add<MValueTypeI>( true, 42 );
-  mMap2.get<MValueTypeI>( true ).getInstance().erase ( 43 );
+  mMap1.add<MValueTypeI>( true );
+  mMap1.get<MValueTypeI>( true ).getInstance().init( 42 );
+  mMap1.get<MValueTypeI>( true ).getInstance().erase( 42 );
+  mMap2.add<MValueTypeI>( true );
+  mMap2.get<MValueTypeI>( true ).getInstance().init( 42 );
+  mMap2.get<MValueTypeI>( true ).getInstance().erase( 43 );
   EXPECT_FALSE( mMap1 <= mMap2 );
   EXPECT_FALSE( mMap2 <= mMap1 );
   mMap1.get<MValueTypeI>( true ).getInstance().set( 43 );

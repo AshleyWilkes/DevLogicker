@@ -104,29 +104,26 @@ class GridImpl<std::tuple<MSlot...>> {
 //jde vytvorit ze zadaneho MSlotsSetu
 //using Grid3 = Grid<MSlotsSet>;
 
-template<typename... Args>
-struct GridHelper;
+template<typename ArgsTuple, template<typename> typename... ManagementType>
+struct Grid;
 
-template<typename... MIds, typename ManagementType>
-struct GridHelper<ManagementType, MIds...> {
+template<typename... MIds, template<typename> typename ManagementType>
+struct Grid<std::tuple<MIds...>, ManagementType> {
   public:
     using type = GridImpl<typename ManagedSlotsSetFromIds<ManagedIdsSet<MIds...>, ManagementType>::tuple>;
 };
 
-template<typename... MIds, typename ManagementType>
-struct GridHelper<ManagementType, ManagedIdsSet<MIds...>> {
+template<typename... MIds, template<typename> typename ManagementType>
+struct Grid<ManagedIdsSet<MIds...>, ManagementType> {
   public:
     using type = GridImpl<typename ManagedSlotsSetFromIds<ManagedIdsSet<MIds...>, ManagementType>::tuple>;
 };
 
 template<typename... MSlots>
-struct GridHelper<ManagedSlotsSet<MSlots...>> {
+struct Grid<ManagedSlotsSet<MSlots...>> {
   public:
     using type = GridImpl<typename ManagedSlotsSet<MSlots...>::tuple>;
 };
-
-template<typename... Args>
-using Grid = typename GridHelper<Args...>::type;
 
 //gridy jsou povazovany za stejny, kdyz maji stejnej set MSlotu. Tj. stejny id, type *i* management!
 //jeden grid je subgridem druhyho, kdyz kazdej jeho MSlot je subslotem odpovidajiciho slotu v druhym Gridu

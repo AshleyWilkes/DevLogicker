@@ -19,7 +19,8 @@ static_assert(std::is_same_v<MValue, MValue2>);
 
 TEST(ManagedValue, SetAndGet) {
   //lze vytvorit konstruktorem se stejnymi parametry jako ma konstruktor ManagementTypu
-  MValue mValue{ 42 };
+  MValue mValue;
+  mValue.getInstance().init( 42 );
   //umi vratit referenci na objekt typu ManagementType<typHodnoty>
   auto& valueInstance = mValue.getInstance();
   EXPECT_CALL( valueInstance.getMock(), mockedGet() );
@@ -29,10 +30,12 @@ TEST(ManagedValue, SetAndGet) {
 }
 
 TEST(ManagedValue, OperatorLEWhenValueErasedBeforeEnd) {
-  MValue mValue1{ 15 };
-  MValue mValue2{ 15 };
+  MValue mValue1;
+  MValue mValue2;
   auto& inst1 = mValue1.getInstance();
   auto& inst2 = mValue2.getInstance();
+  inst1.init( 15 );
+  inst2.init( 15 );
   EXPECT_CALL( inst1.getMock(), mockedErase( 16 ) );
   EXPECT_CALL( inst1.getMock(), mockedGetValueSet() ).Times( 2 );
   EXPECT_CALL( inst2.getMock(), mockedGetValueSet() ).Times( 2 );
@@ -42,10 +45,12 @@ TEST(ManagedValue, OperatorLEWhenValueErasedBeforeEnd) {
 }
 
 TEST(ManagedValue, OperatorLEWhenValueErasedAtTheEnd) {
-  MValue mValue1{ 15 };
-  MValue mValue2{ 15 };
+  MValue mValue1;
+  MValue mValue2;
   auto& inst1 = mValue1.getInstance();
   auto& inst2 = mValue2.getInstance();
+  inst1.init( 15 );
+  inst2.init( 15 );
   EXPECT_CALL( inst1.getMock(), mockedErase( 18 ) );
   EXPECT_CALL( inst1.getMock(), mockedGetValueSet() ).Times( 2 );
   EXPECT_CALL( inst2.getMock(), mockedGetValueSet() ).Times( 2 );

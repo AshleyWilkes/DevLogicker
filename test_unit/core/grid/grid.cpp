@@ -2,10 +2,11 @@
 #include "core/grid/grid.hpp"
 #include "core/grid/mock_grid.hpp"
 #include "core/grid/common.hpp"
+#include "core/mock_management_type.hpp"
 
 namespace {
 
-namespace grid = logicker::core::grid;
+using namespace logicker::core::grid;
 
 char valueStr[] = "value";
 using MValueId = ManagedValueId<valueStr, int>;
@@ -17,42 +18,42 @@ char unknownStr[] = "unknown";
 
 using MValuesIds = ManagedIdsSet<MValueId, MMapIdBIF>;
 
-using MValueTypeI = ManagedValueType<int, typename DummyManagementType::type<int>>;
-using MValueTypeF = ManagedValueType<float, typename DummyManagementType::type<float>>;
+using MValueTypeI = ManagedValueType<int, MockReadOnlyManagementType<int>>;
+using MValueTypeF = ManagedValueType<float, MockReadOnlyManagementType<float>>;
 
 using MValueSlot = ManagedValueSlotFromId<MValueId, MValueTypeI>::type;
 
 using MMapType = ManagedMapType<bool, MValueTypeI, MValueTypeF>;
 using MMapSlot = typename ManagedMapSlotFromId<MMapIdBIF, MMapType>::type;
 
-using MSlotsSet = ManagedSlotsSetFromIds<ManagedIdsSet<MValueId, MMapIdBIF>, DummyManagementType>;
+using MSlotsSet = ManagedSlotsSetFromIds<ManagedIdsSet<MValueId, MMapIdBIF>, MockReadOnlyManagementType>;
 
 //SlotInstance:
 //vrati spravny ManagedValue pro value slot
 static_assert(std::is_same_v<typename SlotInstance<MValueSlot>::type,
-    ManagedValue<int, typename DummyManagementType::type<int>>>);
+    ManagedValue<int, MockReadOnlyManagementType<int>>>);
 //vrati spravny ManagedMap pro map slot
 static_assert(std::is_same_v<typename SlotInstance<MMapSlot>::type, ManagedMap<MMapType>>);
 
 //grid type jde vytvorit z vyjmenovanych MValueIds a zadaneho ManagementTypu
-using Grid1 = Grid<DummyManagementType, MValueId, MMapIdBIF>;
+using Grid1 = Grid<std::tuple<MValueId, MMapIdBIF>, MockReadOnlyManagementType>::type;
 //grid type jde vytvorit ze setu MValuesIds a zadaneho ManagementTypu
-using Grid2 = Grid<DummyManagementType, MValuesIds>;
+using Grid2 = Grid<MValuesIds, MockReadOnlyManagementType>::type;
 //grid type jde vytvorit ze zadaneho MSlotsSetu
-using Grid3 = Grid<MSlotsSet>;
+using Grid3 = Grid<MSlotsSet>::type;
 
-static_assert(grid::is_same_grid_v<Grid1, Grid2>);
-static_assert(grid::is_same_grid_v<Grid1, Grid3>);
-static_assert(grid::is_same_grid_v<Grid2, Grid3>);
+static_assert(is_same_grid_v<Grid1, Grid2>);
+static_assert(is_same_grid_v<Grid1, Grid3>);
+static_assert(is_same_grid_v<Grid2, Grid3>);
 
-using Grid4 = Grid<DummyManagementType, MValueId>;
+using Grid4 = Grid<std::tuple<MValueId>, MockReadOnlyManagementType>::type;
 
 //grid typy lze porovnavat na inkluzi -- zde management type nehraje zadnou roli;
 //jinymi slovy na urovni typu jsou vsechny management typy vzajemne porovnavatelne,
 //napr. proto, ze mohou byt setnute na stejnou hodnotu
-static_assert(grid::is_subgrid_v<Grid1, Grid2>);
-static_assert(grid::is_subgrid_v<Grid4, Grid1>);
-static_assert(! grid::is_subgrid_v<Grid1, Grid4>);
+static_assert(is_subgrid_v<Grid1, Grid2>);
+static_assert(is_subgrid_v<Grid4, Grid1>);
+static_assert(! is_subgrid_v<Grid1, Grid4>);
 
 using Grid = Grid1;
 
@@ -68,11 +69,15 @@ using Grid = Grid1;
 //grid instance jde vytvorit, addnout ManagedValue, fetchnout ji, vse za pouziti ManagedValueId
 TEST(Grid, SetAndGetWithMValueId) {
   Grid grid;
-  grid.get<MValueId>().set( 42 );
+  grid.get<MValueId>().init( 42 );
   EXPECT_EQ( grid.get<MValueId>().get(), 42 );
-  grid.get<MMapIdBIF>().add<MValueTypeI>( true, 24 );
+  grid.get<MMapIdBIF>().add<MValueTypeI>( true );
+  grid.get<MMapIdBIF>().get<MValueTypeI>( true ).getInstance().init( 24 );
+  //v nasledujicich volanich by melo jit (bez nasledku) smazat ManagedValue;
+  //??nasledne by melo jit zrusit ten copy-template ManagedValue<ManagedValue>??
   EXPECT_EQ( grid.get<MMapIdBIF>().get<ManagedValue<MValueTypeI>>( true ).getInstance().get(), 24 );
-  grid.get<MMapIdBIF>().add<MValueTypeF>( false, 21.0 );
+  grid.get<MMapIdBIF>().add<MValueTypeF>( false );
+  grid.get<MMapIdBIF>().get<MValueTypeF>( false ).getInstance().init( 21.0 );
   EXPECT_EQ( grid.get<MMapIdBIF>().get<ManagedValue<MValueTypeF>>( false ).getInstance().get(), 21.0 );
 }
 

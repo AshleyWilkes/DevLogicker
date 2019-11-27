@@ -2,7 +2,7 @@
 #include "core/grid/managed_id.hpp"
 #include "core/grid/managed_slot.hpp"
 #include "core/grid/common.hpp"
-//#include "core/mock_management_type.hpp"
+#include "core/mock_management_type.hpp"
 
 namespace {
 
@@ -18,8 +18,8 @@ using MMapIdBIF = ManagedMapId<mapStr, bool, int, float>;
 
 using MIdsSet = ManagedIdsSet<MValueId, MMapIdBIF>;
 
-using MValueTypeI = ManagedValueType<int, typename DummyManagementType::type<int>>;
-using MValueTypeF = ManagedValueType<float, typename DummyManagementType::type<float>>;
+using MValueTypeI = ManagedValueType<int, MockReadOnlyManagementType<int>>;
+using MValueTypeF = ManagedValueType<float, MockReadOnlyManagementType<float>>;
 
 using MMapType = ManagedMapType<bool, MValueTypeI, MValueTypeF>;
 
@@ -31,7 +31,7 @@ using MMapSlot2 = typename ManagedMapSlotFromName<mapStr, bool, MValueTypeI, MVa
 
 using InvalidMSlotsSet = ManagedSlotsSet<MValueId>;
 using MSlotsSet = ManagedSlotsSetFromSlots<MValueSlot, MMapSlot>;
-using MSlotsSet2 = ManagedSlotsSetFromIds<MIdsSet, DummyManagementType>;
+using MSlotsSet2 = ManagedSlotsSetFromIds<MIdsSet, MockReadOnlyManagementType>;
 
 //ManagedValueSlot:
 //nejde vytvorit z nekompatibilni dvojice [ManagedValueId, ManagedValueType]
@@ -44,9 +44,9 @@ static_assert(MValueSlot::name == valueStr);
 //zna svuj typ hodnoty
 static_assert(std::is_same_v<typename MValueSlot::valueType, int>);
 //zna svuj typ managementu
-static_assert(std::is_same_v<typename MValueSlot::managementType, typename DummyManagementType::type<int>>);
+static_assert(std::is_same_v<typename MValueSlot::managementType, MockReadOnlyManagementType<int>>);
 //zna svuj managedType
-static_assert(std::is_same_v<typename MValueSlot::managedType, ManagedValueType<int, typename DummyManagementType::type<int>>>);
+static_assert(std::is_same_v<typename MValueSlot::managedType, ManagedValueType<int, MockReadOnlyManagementType<int>>>);
 //vytvoren ruznymi zpusoby dava stejny typ
 static_assert(std::is_same_v<MValueSlot, MValueSlot2>);
 

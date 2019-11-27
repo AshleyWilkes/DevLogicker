@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 #include <bitset>
 #include <optional>
 
@@ -26,4 +26,4 @@ class DummyManagementType {
     using type = Impl<valueT>;
 };
 
-}
+}*/

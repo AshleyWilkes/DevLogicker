@@ -84,26 +84,26 @@ struct ManagedMapSlotFromName<name_, keyType_, std::tuple<valueTypes_...>> {
     using type = typename ManagedMapSlotFromName<name_, keyType_, valueTypes_...>::type;
 };
 
-template<typename managedId, typename managementType>
+template<typename managedId, template<typename> typename managementType>
 struct MakeSlot;
 
-template<auto name_, typename type_, typename managementType_>
+template<auto name_, typename type_, template<typename> typename managementType_>
 struct MakeSlot<ManagedValueId<name_, type_>, managementType_> {
   public:
-    //using managementType = typename managementType_::template type<type_>;
+    //using managementType = managementType_<type_>;
     //using managedValueType = ManagedValueType<type_, managementType>;
     //using value = typename ManagedValueSlotFromName<name_, managedValueType>::type;
-    using value = typename ManagedValueSlotFromName<name_, ManagedValueType<type_, typename managementType_::template type<type_>>>::type;
+    using value = typename ManagedValueSlotFromName<name_, ManagedValueType<type_, managementType_<type_>>>::type;
 };
 
-template<auto name_, typename keyType_, typename... valueTypes_, typename managementType_>
+template<auto name_, typename keyType_, typename... valueTypes_, template<typename> typename managementType_>
 struct MakeSlot<ManagedMapId<name_, keyType_, valueTypes_...>, managementType_> {
   public:
-    using managedValues = std::tuple<ManagedValue<valueTypes_, typename managementType_::template type<valueTypes_>>...>;
+    using managedValues = std::tuple<ManagedValue<valueTypes_, managementType_<valueTypes_>>...>;
     using value = typename ManagedMapSlotFromName<name_, keyType_, managedValues>::type;
 };
 
-template<typename managedId, typename managementType>
+template<typename managedId, template<typename> typename managementType>
 using makeSlot_v = typename MakeSlot<managedId, managementType>::value;
 
 template<typename... managedSlots_>
@@ -117,16 +117,16 @@ struct ManagedSlotsSet {
 template<typename... managedSlots_>
 using ManagedSlotsSetFromSlots = ManagedSlotsSet<managedSlots_...>;
 
-template<typename managedIds, typename managementType>
+template<typename managedIds, template<typename> typename managementType>
 struct ManagedSlotsSetFromIdsImpl;
 
-template<typename... managedIds, typename managementType>
+template<typename... managedIds, template<typename> typename managementType>
 struct ManagedSlotsSetFromIdsImpl<std::tuple<managedIds...>, managementType> {
   public:
     using type = ManagedSlotsSet<makeSlot_v<managedIds, managementType>...>;
 };
 
-template<typename managedIdsSet, typename managementType>
+template<typename managedIdsSet, template<typename> typename managementType>
 using ManagedSlotsSetFromIds = typename ManagedSlotsSetFromIdsImpl<typename managedIdsSet::tuple, managementType>::type;
 
 }

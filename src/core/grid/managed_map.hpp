@@ -28,6 +28,7 @@ class ManagedMapImpl<keyType_, std::tuple<valueTypes_...>> {
 
     const ValuesVariantType get( const KeyType& key ) const;
 
+    auto& getInstance() { return *this; } 
     const auto& getInstance() const { return *this; } 
 
     const std::map<KeyType, ValuesVariantType>& getMap() const { return map_; }
