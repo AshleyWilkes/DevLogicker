@@ -1,6 +1,5 @@
 #include "gtest/gtest.h"
 #include "core/grid/managed_id.hpp"
-#include "core/grid/common.hpp"
 
 namespace {
 

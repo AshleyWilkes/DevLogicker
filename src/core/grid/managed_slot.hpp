@@ -14,6 +14,7 @@ struct ManagedValueSlotImpl : ManagedSlot {
     using valueType = valueType_;
     using managementType = managementType_;
     using managedType = ManagedValueType<valueType_, managementType_>;
+    using managedId = ManagedValueId<name_, valueType_>;
 };
 
 template<typename valueId_, typename valueType_>
@@ -37,6 +38,7 @@ struct ManagedMapSlotImpl : ManagedSlot {
     using valueTypesTuple = std::tuple<valueTypes_...>;
     using valueTypesSet = type::SetT<valueTypesTuple>;
     using managedType = ManagedMapType<keyType_, valueTypes_...>;
+    using managedId = ManagedMapId<name_, keyType_, valueTypes_...>;
 };
 
 template<auto name_, typename keyType_, typename... valueTypes_>
@@ -47,6 +49,7 @@ struct ManagedMapSlotImpl<name_, keyType_, std::tuple<valueTypes_...>> : Managed
     using valueTypesTuple = std::tuple<valueTypes_...>;
     using valueTypesSet = type::SetT<valueTypesTuple>;
     using managedType = ManagedMapType<keyType_, valueTypes_...>;
+    using managedId = ManagedMapId<name_, keyType_, valueTypes_...>;
 };
 
 //tahle sablona ma umoznovat namapovat mapId_ na libovolny mapType_ se stejnymi typy hodnot
@@ -112,6 +115,7 @@ struct ManagedSlotsSet {
     static_assert((std::is_base_of_v<ManagedSlot, managedSlots_> && ... ));
     using tuple = std::tuple<managedSlots_...>;
     using set = type::SetT<tuple>;
+    using managedIdsSet = ManagedIdsSet<typename managedSlots_::managedId...>;
 };
 
 template<typename... managedSlots_>

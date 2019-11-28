@@ -1,7 +1,6 @@
 #include "gtest/gtest.h"
 #include "core/grid/grid.hpp"
 #include "core/grid/mock_grid.hpp"
-#include "core/grid/common.hpp"
 #include "core/mock_management_type.hpp"
 
 namespace {
@@ -41,6 +40,10 @@ using Grid1 = Grid<std::tuple<MValueId, MMapIdBIF>, MockReadOnlyManagementType>:
 using Grid2 = Grid<MValuesIds, MockReadOnlyManagementType>::type;
 //grid type jde vytvorit ze zadaneho MSlotsSetu
 using Grid3 = Grid<MSlotsSet>::type;
+//TODO: pro testy by bylo prakticke, kdyby sel grid vytvorit taky z vyjmenovanych
+//MValueTypu; vsechny 3 ted testovane zpusoby vytvoreni gridu podporuji pouze situaci,
+//kdy vsechna MIds maji stejny ManagementType, coz je clearly nedostatecne. Krom toho cely
+//zpusob vytvareni gridu by chtel revize, tam asi doslo k chybe.
 
 static_assert(is_same_grid_v<Grid1, Grid2>);
 static_assert(is_same_grid_v<Grid1, Grid3>);
@@ -55,8 +58,6 @@ static_assert(is_subgrid_v<Grid1, Grid2>);
 static_assert(is_subgrid_v<Grid4, Grid1>);
 static_assert(! is_subgrid_v<Grid1, Grid4>);
 
-using Grid = Grid1;
-
 //grid instance jde vytvorit, addnout ManagedValue, fetchnout ji, vse za pouziti auto id ("value", resp valueStr)
 /*TEST(Grid, SetAndGetWithAutoId) {
   Grid grid;
@@ -68,22 +69,20 @@ using Grid = Grid1;
 
 //grid instance jde vytvorit, addnout ManagedValue, fetchnout ji, vse za pouziti ManagedValueId
 TEST(Grid, SetAndGetWithMValueId) {
-  Grid grid;
+  Grid1 grid;
   grid.get<MValueId>().init( 42 );
   EXPECT_EQ( grid.get<MValueId>().get(), 42 );
   grid.get<MMapIdBIF>().add<MValueTypeI>( true );
   grid.get<MMapIdBIF>().get<MValueTypeI>( true ).getInstance().init( 24 );
-  //v nasledujicich volanich by melo jit (bez nasledku) smazat ManagedValue;
-  //??nasledne by melo jit zrusit ten copy-template ManagedValue<ManagedValue>??
-  EXPECT_EQ( grid.get<MMapIdBIF>().get<ManagedValue<MValueTypeI>>( true ).getInstance().get(), 24 );
+  EXPECT_EQ( grid.get<MMapIdBIF>().get<MValueTypeI>( true ).getInstance().get(), 24 );
   grid.get<MMapIdBIF>().add<MValueTypeF>( false );
   grid.get<MMapIdBIF>().get<MValueTypeF>( false ).getInstance().init( 21.0 );
-  EXPECT_EQ( grid.get<MMapIdBIF>().get<ManagedValue<MValueTypeF>>( false ).getInstance().get(), 21.0 );
+  EXPECT_EQ( grid.get<MMapIdBIF>().get<MValueTypeF>( false ).getInstance().get(), 21.0 );
 }
 
 //fetch na v ManagedSlotsSet... neobsazeny typ je compile-time error
 TEST(Grid, UnknownMIdType) {
-  Grid grid;
+  Grid1 grid;
   //grid.get<unknownStr>();//this does not compile
 }
 
@@ -94,18 +93,43 @@ TEST(Grid, UnknownMIdType) {
 //
 //test, ze grid1 <= grid2 nekompiluje, kdyz Grid1 neni subgrid Gridu2
 TEST(Grid, OperatorLEDoesntCompileForIncompatibleGrids) {
-  /*using SmallGrid = Grid<DummyManagementType, MValueId>;
-  using LargeGrid = Grid<DummyManagementType, MValueId, MMapIdBIF>;
+  using SmallGrid = Grid<std::tuple<MValueId>, MockReadOnlyManagementType>::type;
+  using LargeGrid = Grid<std::tuple<MValueId, MMapIdBIF>, MockReadOnlyManagementType>::type;
   SmallGrid small;
   LargeGrid large;
-  large <= small;//this shouldn't compile*/
+  //large <= small;//this doesn't compile
 }
 
 //test s Gridem s 1 MValueId, 2 ruzne instance, porovnani na obe strany (jeden succ a jeden fail) 
-TEST(Grid, OperatorLEWorksWith2InstancesOf1Grid) {
+TEST(Grid, OperatorLEWorksWith2InstancesOf1GridWithValue) {
+  using GridWith1MValue = Grid<std::tuple<MValueId>, MockRangeManagementTemplate<5>::type>::type;
+  GridWith1MValue small, large;
+  small.get<MValueId>().init( 1 );
+  large.get<MValueId>().init( 1 );
+  small.get<MValueId>().set( 3 );
+  ASSERT_LE( small, large );
+  ASSERT_FALSE( large <= small );
 }
+
 //test s Gridem s 1 MMapId, 2 ruzne instance, porovnani na obe strany (jeden succ a jeden fail)
+TEST(Grid, OperatorLEWorksWith2InstancesOf1GridWithMap) {
+  using GridWith1MMap = Grid<std::tuple<MMapIdBIF>, MockRangeManagementTemplate<5>::type>::type;
+  using MValueTypeI = ManagedValueType<int, MockRangeManagementType<5, int>>;
+  using MValueTypeF = ManagedValueType<float, MockRangeManagementType<5, float>>;
+  GridWith1MMap small, large;
+  small.get<MMapIdBIF>().add<MValueTypeI>( true );
+  large.get<MMapIdBIF>().add<MValueTypeI>( true );
+  small.get<MMapIdBIF>().get<MValueTypeI>( true ).getInstance().init( 1 );
+  large.get<MMapIdBIF>().get<MValueTypeI>( true ).getInstance().init( 1 );
+  small.get<MMapIdBIF>().get<MValueTypeI>( true ).getInstance().set( 3 );
+  ASSERT_LE( small, large );
+  ASSERT_FALSE( large <= small );
+}
+
 //test s relativne slozitym Gridem, 2 ruzne instance, porovnani na obe strany (1 succ a 1 fail)
+TEST(Grid, OperatorLEWorksWithMultiIdGrids) {
+  //TODO: design and implementation
+}
 
 TEST(MockManagedValue, DelegatesGet) {
   //vytvorit InnerManagedValue bez vnitrni tridy

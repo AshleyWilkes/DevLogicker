@@ -95,14 +95,9 @@ class GridImpl<std::tuple<MSlot...>> {
     auto& get() {
       return instances_[boost::hana::type_c<MId>].getInstance();
     }
-};
 
-//jde vytvorit z vyjmenovanych MValueIds a zadaneho ManagementTypu
-//using Grid1 = Grid<MValueId, MMapIdBIF, DummyManagementType>;
-//jde vytvorit ze setu MValuesIds a zadaneho ManagementTypu
-//using Grid2 = Grid<MValuesIds, DummyManagementType>;
-//jde vytvorit ze zadaneho MSlotsSetu
-//using Grid3 = Grid<MSlotsSet>;
+    const auto& getInstances() const { return instances_; }
+};
 
 template<typename ArgsTuple, template<typename> typename... ManagementType>
 struct Grid;
@@ -151,7 +146,7 @@ template<typename G1, typename G2>
 class IsSubgrid;
 
 //grid G1 je subgridem G2, kdyz kazdy jeho MId ma v G2 supergrid:
-//MValueId musi byt pritomno v G2 ve stejne forme
+//MValueId musi byt pritomno v G2 ve stejne forme vcetne management typu
 //MMapId musi byt v G2 ve forme, ktera pripousti stejne veci (muze jich pripoustet vic); toto nabizi
 //  ruzne moznosti s ohledem na domeny, volim asi moznost domeny ignorovat a pozadovat v G2 stejne
 //  datove typy v G2
@@ -169,22 +164,33 @@ class IsSubgrid<std::tuple<MIds1...>, std::tuple<MIds2...>> {
 template<typename G1, typename G2>
 inline constexpr bool is_subgrid_v = IsSubgrid<typename G1::MIdsTuple, typename G2::MIdsTuple>::value;
 
-/*template<template<typename...> typename MappingType, typename GridType>
-class Grid {
-  public:
-    template<typename MappingId>
-    MappingType<MappingId> get();
-
-    template<typename MappingId>
-    void set( const std::map<typename MappingId::KeyT, typename MappingId::ValueT>& values );
-};*/
+template<typename Keys, typename Lhs, typename Rhs>
+bool compareInstances( const Keys& keys, const Lhs& lhs, const Rhs& rhs ) {
+  if constexpr ( boost::hana::is_empty( keys ) ) {
+    return true;
+  } else {
+    auto key = boost::hana::front( keys );
+    if ( lhs[ key ] <= rhs[ key ] ) {
+      return compareInstances( boost::hana::drop_front( keys ), lhs, rhs );
+    } else {
+      return false;
+    }
+  }
+}
 
 //pozadavky:
 //rhs musi obsahovat vsechny MappingIds, ktere obsahuje lhs -- static_assert nad ManagedIdsSets
 //kazdy Mapping v lhs musi byt podmnozinou Mappingu v rhs -- volani porovnani na mappingach
-/*template<template<typename...> typename MT1, typename GT1, template<typename...> typename MT2, typename GT2>
-bool operator<=( const Grid<MT1, GT1>& lhs, const Grid <MT2, GT2>& rhs ) {
-  return false;
-}*/
+template<typename... MSlots1, typename... MSlots2>
+bool operator<=(
+    const GridImpl<std::tuple<MSlots1...>>& lhs,
+    const GridImpl<std::tuple<MSlots2...>>& rhs ) {
+  using MIdsSet1 = typename ManagedSlotsSet<MSlots1...>::managedIdsSet::set;
+  using MIdsSet2 = typename ManagedSlotsSet<MSlots2...>::managedIdsSet::set;
+  static_assert( type::is_subset<MIdsSet1, MIdsSet2> );
+  
+  auto keys = boost::hana::keys( lhs.getInstances() );
+  return compareInstances( keys, lhs.getInstances(), rhs.getInstances() );
+}
 
 }

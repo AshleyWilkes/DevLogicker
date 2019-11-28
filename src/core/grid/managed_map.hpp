@@ -66,21 +66,21 @@ ManagedMapImpl<keyType_, std::tuple<valueTypes_...>>::get( const KeyType& key ) 
   return map_.at( key );
 }
 
-//  true, pokud lhVariant obsahuje jinou variantu nez aktualni
-//  false, pokud lhVariant obsahuje aktualni variantu, ale rhVariant ne
-//  vysledek lhVariant <= rhVariant, pokud obe obsahuji aktualni variantu
 template<typename variantType, typename lhType, typename rhType>
 bool
 compareVariants( const lhType& lhs, const rhType& rhs ) {
   if ( std::holds_alternative<ManagedValue<variantType>>( lhs ) ) {
+    //vysledek lhVariant <= rhVariant, pokud obe obsahuji aktualni variantu
     if ( std::holds_alternative<ManagedValue<variantType>>( rhs ) ) {
       auto lhVariant = std::get<ManagedValue<variantType>>( lhs );
       auto rhVariant = std::get<ManagedValue<variantType>>( rhs );
       return lhVariant <= rhVariant;
+    //false, pokud lhVariant obsahuje aktualni variantu, ale rhVariant ne
     } else  {
       return false;
     }
   } else {
+    //true, pokud lhVariant obsahuje jinou variantu nez aktualni
     return true;
   }
 }

@@ -120,4 +120,11 @@ MockRangeManagementType<Size_, Value_>::getValueSet() const {
   }
 }
 
+template<std::size_t S>
+class MockRangeManagementTemplate {
+  public:
+    template<typename T>
+    using type = MockRangeManagementType<S, T>;
+};
+
 }
